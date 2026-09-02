@@ -31,8 +31,13 @@ Daraus folgt die zentrale Arbeitsregel dieses Repos:
   Nachnamen belegen. `GET /open/names` veröffentlicht jeden benutzten Namen im Internet
   ([ADR-0009](docs/adr/0009-nur-synthetische-bezeichner.md)).
 - **⚠️ Keine undeklarierten Felder oder Query-Parameter.** Der Hub validiert strikt und
-  antwortet mit `400 "property <x> should not exist"`. Ein „hilfreich" ergänzter Filter
-  bricht den Aufruf ([ADR-0010](docs/adr/0010-striktes-anfrage-schema.md)).
+  antwortet mit `400 "property <x> should not exist"`. Ein ergänzter Filter bricht den
+  Aufruf. Das gilt **auch für die angekündigte Absender-Filterung**: bis sie in der
+  Spezifikation steht, wird sie nicht gesendet
+  ([ADR-0010](docs/adr/0010-striktes-anfrage-schema.md)).
+- **⚠️ Namen immer kleinschreiben.** Der Hub unterscheidet Groß-/Kleinschreibung, `anna` und
+  `Anna` sind zwei Warteschlangen. Eingaben werden normalisiert; **geantwortet wird an das
+  rohe `from`** ([ADR-0014](docs/adr/0014-namen-kleinschreiben.md)).
 - **⚠️ Kein `credentials: "include"`.** Der Hub sendet `Access-Control-Allow-Origin: *`
   und braucht keine Credentials. Mit `include` verlangt der Browser einen konkreten Origin
   statt der Wildcard und der Aufruf scheitert, obwohl der Code korrekt aussieht
@@ -72,6 +77,8 @@ Verbindlich, Begründungen in den verlinkten ADRs:
   ([ADR-0003](docs/adr/0003-nur-offener-pfad.md))
 - **Krypto:** WebCrypto, AES-GCM mit PBKDF2-Ableitung, umschaltbar gegen Klartext
   ([ADR-0007](docs/adr/0007-krypto-umschaltbar.md))
+- **Keine Stufen-Abstraktion.** Token und OIDC sind in diesem Release ignoriert
+  ([ADR-0003](docs/adr/0003-nur-offener-pfad.md))
 - **Lokale Persistenz:** IndexedDB, einzige Historie überhaupt
   ([ADR-0011](docs/adr/0011-lokale-persistenz-indexeddb.md))
 - **Abruf:** adaptives Polling ([ADR-0008](docs/adr/0008-adaptives-polling.md))
@@ -85,8 +92,9 @@ Wer diese fünf nicht im Kopf hat, entwirft am Dienst vorbei. Herleitung in
    nach 60 Minuten, höchstens 20 Nachrichten je Name.
 2. **Ansehen und Entnehmen sind getrennt.** `GET` ist folgenlos und wiederholbar,
    `DELETE /open/messages/{id}` entnimmt endgültig und genau einmal.
-3. **Kein Absender-Filter.** `GET /open/messages` kennt **nur** `to`. Man holt immer den
-   **ganzen Eingang** eines Namens, quer über alle Absender
+3. **Kein Absender-Filter — noch nicht.** `GET /open/messages` kennt **nur** `to`. Man holt
+   immer den **ganzen Eingang** eines Namens, quer über alle Absender. Eine serverseitige
+   Filterung ist angekündigt; vorbereitet ist die *Stelle*, nicht der *Aufruf*
    ([ADR-0005](docs/adr/0005-konversation-ist-client-konstrukt.md)).
 4. **Kein Nachweis, für nichts.** Jeder darf jede Warteschlange lesen **und** entnehmen.
    `from` ist eine unbeglaubigte Behauptung.
@@ -117,5 +125,8 @@ trusten (sie ist auch Wurzel eines TLS-Interception-Proxys).
   bewusst reine Dokumentation.
 - **Keine Zugangsdaten, keine Schlüssel, keine Echtdaten.** Siehe
   [docs/guardrails.md](docs/guardrails.md).
-- **Keine Implementierung der Token- oder OIDC-Stufe.** Die Nachrichten-Endpunkte dieser
-  Stufen existieren am Hub nicht; `/oidc/config` liefert derzeit `configured: false`.
+- **Nichts zur Token- oder OIDC-Stufe.** In diesem Release ausdrücklich ignoriert: keine
+  Anmeldung, kein `X-API-Key`, kein Bearer-Header, kein Aufruf unter `/oidc/` oder
+  `/token/`, keine Abstraktion und kein UI-Element, das eine Stufe ankündigt. Die
+  Nachrichten-Endpunkte dieser Stufen existieren am Hub nicht; `/oidc/config` liefert
+  `configured: false` ([ADR-0003](docs/adr/0003-nur-offener-pfad.md)).

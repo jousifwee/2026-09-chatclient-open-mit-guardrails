@@ -26,6 +26,7 @@ auf die fehlende ADR.
 - WebCrypto AES-GCM mit PBKDF2, umschaltbar gegen Klartext (ADR-0007)
 - IndexedDB als einzige Historie (ADR-0011)
 - Adaptives Polling (ADR-0008)
+- **Keine** Stufen-Abstraktion: Token und OIDC sind in diesem Release ignoriert (ADR-0003)
 
 ## Harte Regeln
 
@@ -37,7 +38,9 @@ auf die fehlende ADR.
    Sortier- oder Paginierungsparameter — es gibt keine.
 3. **`GET /open/messages` kennt nur `to`.** Der Aufruf liefert den **gesamten Eingang**
    eines Namens über alle Absender hinweg. Konversationen entstehen **clientseitig** durch
-   Gruppieren nach `from` (ADR-0005). Niemals ein `GET` je Konversation.
+   Gruppieren nach `from` (ADR-0005). Niemals ein `GET` je Konversation. Eine serverseitige
+   Absender-Filterung ist angekündigt — bis sie in der Spezifikation steht, wird sie **nicht
+   gesendet**, auch nicht hinter einem Schalter oder auskommentiert.
 4. **Kein `credentials: "include"`** in `fetch`. Der Hub antwortet mit
    `Access-Control-Allow-Origin: *` und braucht keine Credentials.
 5. **`204` ist der Normalfall, kein Fehler** — leerer Eingang. Nicht als `404` oder
@@ -48,6 +51,12 @@ auf die fehlende ADR.
    im Code, noch in Tests, noch als Nutzlast an den Hub.
 8. **Fehlgeschlagenes Entschlüsseln ist ein normaler Anzeigezustand**, keine Ausnahme.
    Ein Eingang kann Klartext und Chiffrate verschiedener Absender mischen (ADR-0007).
+9. **Namen kleinschreiben** mit `toLocaleLowerCase("en-US")` — der Hub unterscheidet
+   Groß-/Kleinschreibung, `anna` und `Anna` sind zwei Warteschlangen. **Aber geantwortet
+   wird an das rohe `from`**, nie an die kleingeschriebene Form: sonst landet die Antwort
+   lautlos in einer anderen Warteschlange (ADR-0014).
+10. **Nichts zur Token- oder OIDC-Stufe** — keine Anmeldung, kein `X-API-Key`, kein
+   Bearer-Header, kein Aufruf unter `/oidc/` oder `/token/` (ADR-0003).
 
 ## Grenzen des Hubs, die im Code auftauchen müssen
 

@@ -17,7 +17,11 @@ vorgeschlagen.
 
 Vier Fallen, die einen fertig aussehenden Aufruf scheitern lassen — Details in CLAUDE.md:
 
-- `GET /open/messages` kennt **nur** `to`. Es gibt **keinen** Absender-Filter.
+- `GET /open/messages` kennt **nur** `to`. Ein Absender-Filter ist angekündigt, existiert
+  aber **noch nicht** — und wird bis dahin nicht gesendet.
 - Undeklarierte Felder oder Query-Parameter ergeben `400 "property <x> should not exist"`.
 - `credentials: "include"` bricht CORS gegen `Access-Control-Allow-Origin: *`.
 - `to`/`from` **niemals** mit echten Namen belegen — `GET /open/names` ist öffentlich.
+- Namen kleinschreiben; geantwortet wird aber an das **rohe** `from`, sonst landet die
+  Antwort lautlos in einer anderen Warteschlange.
+- Token- und OIDC-Stufe sind in diesem Release **ignoriert** — nichts davon einbauen.

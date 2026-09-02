@@ -27,8 +27,9 @@ anderen nicht erreichbar.
 
 `GET /oidc/config` liefert auf dieser Instanz **`configured: false`** (geprüft 2026-09-02) —
 die OIDC-Stufe ist nicht einmal eingerichtet. Dieses Projekt nutzt daher ausschließlich den
-offenen Pfad, modelliert die Stufe aber als austauschbare Abstraktion
-([ADR-0003](adr/0003-nur-offener-pfad.md)).
+offenen Pfad und **ignoriert Token- und OIDC-Stufe in diesem Release vollständig**: keine
+Anmeldung, kein Aufruf unter `/oidc/` oder `/token/`, und ausdrücklich **keine**
+Stufen-Abstraktion ([ADR-0003](adr/0003-nur-offener-pfad.md)).
 
 ## Die Endpunkte des offenen Pfades
 
@@ -38,7 +39,7 @@ Rumpf `SubmitMessageDto`, alle drei Felder erforderlich:
 
 | Feld | Typ | Regel |
 |---|---|---|
-| `to` | string | `^[A-Za-z0-9_-]{1,32}$`, Groß-/Kleinschreibung wird unterschieden |
+| `to` | string | `^[A-Za-z0-9_-]{1,32}$`, Groß-/Kleinschreibung wird unterschieden — der Client schreibt klein ([ADR-0014](adr/0014-namen-kleinschreiben.md)) |
 | `from` | string | dasselbe Muster — **unbeglaubigte Behauptung**, der Dienst prüft nichts |
 | `message` | string | mindestens 1 Zeichen, für den Dienst opak |
 
@@ -123,7 +124,9 @@ GET /open/messages?to=etreff_probe_rx                                       -> 2
 
 Beide Nachrichten kommen aus **einem** Aufruf zurück. Daraus folgt Punkt für Punkt:
 
-**1. Ein Absender-Filter existiert nicht — und der Versuch scheitert hart.** Die Operation
+**1. Ein Absender-Filter existiert nicht — und der Versuch scheitert hart.** Eine
+serverseitige Filterung nach Absender ist vom Betreiber **angekündigt**; solange sie nicht in
+der Spezifikation steht, gilt der folgende Befund unverändert. Die Operation
 kennt genau einen Parameter. Wer `from` mitgibt, bekommt keinen ignorierten Parameter,
 sondern einen Fehler (verifiziert):
 
@@ -186,8 +189,13 @@ Verbindlich. Sie folgen aus den Eigenschaften oben, nicht aus Geschmack.
    der Grenze von 20 nähert — sonst schlägt sein nächster Empfang unbemerkt fehl.
 8. **Nur synthetische Bezeichner** in `to` und `from`
    ([ADR-0009](adr/0009-nur-synthetische-bezeichner.md)).
-9. **Kein `credentials: "include"`** ([ADR-0013](adr/0013-cors-ohne-credentials.md)).
-10. **`Retry-After` bei `503` respektieren**, nicht mit festem Intervall weiterhämmern.
+9. **Namen kleinschreiben**, aber an das **rohe `from`** antworten — sonst landet die Antwort
+   lautlos in einer anderen Warteschlange
+   ([ADR-0014](adr/0014-namen-kleinschreiben.md)).
+10. **Kein `credentials: "include"`** ([ADR-0013](adr/0013-cors-ohne-credentials.md)).
+11. **`Retry-After` bei `503` respektieren**, nicht mit festem Intervall weiterhämmern.
+12. **Nichts unter `/oidc/` oder `/token/` aufrufen** — in diesem Release ignoriert
+    ([ADR-0003](adr/0003-nur-offener-pfad.md)).
 
 ## Aufrufe aus dem Browser
 
