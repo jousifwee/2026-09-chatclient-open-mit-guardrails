@@ -1,0 +1,2 @@
+- [Projektziel: Guardrails & agentenlesbare Doku lernen](projektziel-guardrails-lernen.md) — Lernprojekt, der Chatclient ist nur Vehikel.
+- [Prompt-Protokoll-Tooling](prompt-protokoll-tooling.md) — PROMPTS.md wird generiert, nicht handgepflegt.

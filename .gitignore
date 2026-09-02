@@ -1,0 +1,20 @@
+# Abhängigkeiten / Build
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Umgebung und Geheimnisse — NIEMALS versionieren
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Werkzeuge / Editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
