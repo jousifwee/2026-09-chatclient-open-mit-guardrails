@@ -142,10 +142,12 @@ curl -s https://utz-messagehub.itzcloud.de/health
 curl -s https://utz-messagehub.itzcloud.de/openapi.yaml | diff -u docs/api/openapi.yaml -
 ```
 
-**Zu TLS:** Das Hub-Zertifikat kommt aus einer ITZ-internen CA. Ist sie im lokalen
-Trust-Store nicht vorhanden, scheitert `curl` mit Exit 60. Dann
-`--cacert <pfad-zur-itz-ca>` verwenden — **nicht** `-k` und **nicht** die CA global
-trusten (sie ist auch Wurzel eines TLS-Interception-Proxys).
+**Zu TLS:** Der Hub liefert ein Let's-Encrypt-Zertifikat. **Im ITZ-Netz** wird die
+Verbindung aber vom Interception-Proxy `sofia.itz-rostock.de` aufgebrochen und neu
+signiert — dann scheitert `curl` mit Exit 60. Abhilfe: `--cacert <pfad-zu-ITZ08-CA.crt>`.
+**Nicht** `-k`, und die Wurzel **nicht global** trusten (sie beglaubigt auch jede
+aufgebrochene Verbindung). Details in
+[docs/api-messagehub.md](docs/api-messagehub.md).
 
 ## Was dieses Repo nicht enthält
 

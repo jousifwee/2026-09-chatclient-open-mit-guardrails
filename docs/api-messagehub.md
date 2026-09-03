@@ -225,13 +225,32 @@ Spezifikation nennt für `400` keinen Rumpf):
 `message` ist ein **Array** von Meldungen. Wer es als String behandelt, bekommt in der
 Anzeige Buchstabensalat oder eine Ausnahme.
 
-## TLS
+## TLS — und warum `curl` im ITZ-Netz scheitert
 
-Das Zertifikat des Hubs stammt aus einer ITZ-internen CA. Fehlt sie im lokalen Trust-Store,
-scheitert `curl` mit Exit 60 („unable to get local issuer certificate"). Dann
-`--cacert <pfad-zur-itz-ca>` verwenden.
+**Der Hub selbst liefert ein öffentliches Zertifikat.** Er läuft auf der itzcloud-Box hinter
+deren Traefik-Ingress, der TLS mit **Let's Encrypt** terminiert. Von außerhalb des ITZ-Netzes
+braucht niemand eine Sonderbehandlung.
 
-**Nicht** `-k` benutzen und die interne Wurzel **nicht** global trusten: dieselbe CA ist
-auch Wurzel eines TLS-Interception-Proxys — ein globaler Trust würde jede aufgebrochene
-Verbindung mitbeglaubigen. Im Browser ist die CA in der Regel vorhanden; das Problem betrifft
-Kommandozeilen-Werkzeuge.
+**Im ITZ-Netz wird die Verbindung aufgebrochen.** Verifiziert am 2026-09-03: das Zertifikat,
+das hier ankommt, ist von `CN=sofia.itz-rostock.de` ausgestellt — dem TLS-Interception-Proxy.
+Dasselbe gilt für `auth.itzcloud.de` und `migat-web.itzcloud.de`, **nicht** aber für
+`github.com` (dort kommt das echte Sectigo-Zertifikat an). Die Interception ist also
+selektiv.
+
+Folge: `curl` scheitert mit Exit 60 („unable to get local issuer certificate"), weil sofias
+Wurzel (`ITZ08-CA`) nicht im Trust-Store der Kommandozeilen-Werkzeuge liegt. Abhilfe für
+einzelne Aufrufe:
+
+```bash
+curl --cacert <pfad-zu-ITZ08-CA.crt> https://utz-messagehub.itzcloud.de/health
+```
+
+**Nicht** `-k` benutzen, und `ITZ08-CA` **nicht global trusten**: dieselbe Wurzel beglaubigt
+sowohl die interne Service-PKI als auch jede von sofia aufgebrochene Verbindung. Ein globaler
+Trust würde beides gleichzeitig gültig machen.
+
+**Für den Browser spielt das keine Rolle** — dort ist die Wurzel per Richtlinie vorhanden. Das
+Problem betrifft `curl`, `wget`, Node-Skripte und Testläufe.
+
+> **Für den Entwicklertreff relevant:** Teilnehmer im ITZ-Netz brauchen `--cacert`, Teilnehmer
+> über Hotspot oder von außen nicht. Wer das nicht weiß, sucht den Fehler beim Dienst.
