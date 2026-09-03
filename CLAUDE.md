@@ -65,6 +65,7 @@ Daraus folgt die zentrale Arbeitsregel dieses Repos:
 | [docs/guardrails.md](docs/guardrails.md) | Was verboten ist und warum |
 | [docs/conventions.md](docs/conventions.md) | Code- und Doku-Konventionen |
 | [docs/adr/](docs/adr/) | Entscheidungen, einzeln begründet |
+| [docs/confluence/](docs/confluence/) | Trainer-Material für den Entwicklertreff (Confluence-Vorlagen) — **nicht** verbindlich |
 | [memory/](memory/) | Projektgedächtnis, versioniert und für alle Agenten lesbar |
 | [PROMPTS.md](PROMPTS.md) | Prompt-Protokoll, generiert von `tools/collect_prompts.py` |
 

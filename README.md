@@ -27,6 +27,7 @@ Repos ist bewusst reine Dokumentation.
 | wissen willst, wie sich das anfühlt | [docs/ux-bedienkonzept.md](docs/ux-bedienkonzept.md) |
 | wissen willst, was verboten ist | [docs/guardrails.md](docs/guardrails.md) |
 | eine Entscheidung nachvollziehen willst | [docs/adr/](docs/adr/) |
+| Material für den Termin brauchst | [docs/confluence/](docs/confluence/) |
 
 ## ⚠️ Nur synthetische Testdaten
 

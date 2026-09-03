@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-03 13:45 (UTC+02:00) - 13 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-03 15:48 (UTC+02:00) - 17 Prompt(s)
 
 ---
 
@@ -143,3 +143,45 @@ Generiert von `tools/collect_prompts.py` am 2026-09-03 13:45 (UTC+02:00) - 13 Pr
 **Prompt:**
 
 > können wir auf itzcloud so etwas hosten was wie netlify hochladen erlaubt?
+
+## 14. 2026-09-03 13:47:12 (UTC+02:00)
+
+- **UTC:** 2026-09-03 11:47:12Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> was ist mit same site cookies?
+
+## 15. 2026-09-03 13:49:18 (UTC+02:00)
+
+- **UTC:** 2026-09-03 11:49:18Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> was muss ich wo umbauen, damit same site cookies funktionieren?
+
+## 16. 2026-09-03 15:36:40 (UTC+02:00)
+
+- **UTC:** 2026-09-03 13:36:40Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> also wenn wir den service von einem fullstack aus ansprechen, dann haben wir ja kein problem - oder?
+
+## 17. 2026-09-03 15:43:49 (UTC+02:00)
+
+- **UTC:** 2026-09-03 13:43:49Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> bereite mal confluence seiten vor: 
+> die neue api direkt aus dem browser aus html seite ansprechen mit basic auth
+> eine fullstack app bauen, die bff als proxy nutzt (und erwähnen, falls es bei angular noch anderes gäbe)
