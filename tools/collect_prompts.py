@@ -54,6 +54,9 @@ def is_real_prompt(text):
         "<local-command-stdout>",
         "<command-name>",
         "Caveat: The messages below",
+        # Harness-Artefakt, kein Prompt: entsteht, wenn ein Werkzeugaufruf
+        # abgebrochen wird, und wuerde das Protokoll verfaelschen.
+        "[Request interrupted",
     )
     return not t.startswith(skip_prefixes)
 

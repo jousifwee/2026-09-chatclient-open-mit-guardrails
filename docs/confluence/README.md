@@ -10,6 +10,7 @@ stehen in [`../adr/`](../adr/), die Verträge in
 |---|---|
 | [01 — v2 direkt aus einer HTML-Seite mit Basic Auth](01-v2-direkt-aus-html-mit-basic-auth.md) | Eine Datei, kein Framework, kein Build. Registrieren, senden, abholen. Plus die sechs Fallen, die man im Browser trifft. |
 | [02 — Fullstack-App mit BFF als Proxy](02-fullstack-mit-bff-als-proxy.md) | Angular-SPA plus eigener Server. Was ein BFF löst und was nicht, wer der Absender wird, wo die Krypto bleibt — und die Angular-Alternativen (Dev-Proxy, SSR-`server.ts`, Analog.js). |
+| [03 — Chronologie des Projekttags](03-chronologie-projekttag.md) | Erzählter Verlauf der zwei Halbtage: Zeitleiste, die drei Fassungswechsel des Dienstes, acht Befunde, die eine Vermutung anders beantwortet hätte — und was schiefging. Mit Screenshot-Plätzen und den Befehlen dazu. |
 
 ## Einfügen in Confluence
 
@@ -22,9 +23,18 @@ Im Editor `/markdown` → **Markdown einfügen**, dann den Dateiinhalt hineinkop
 - Die Kopfzeile „Vorlage für Confluence, Stand …" vor dem Veröffentlichen entfernen oder in
   eine Seiteneigenschaft überführen.
 
+## Screenshots
+
+Ablage ist [`../../tools/images/`](../../tools/images/). Vorhanden ist bisher
+`01_Stack.png` (Entscheidungsdialog); welche weiteren Motive die Chronologie-Seite braucht und
+mit welchem Befehl sie herzustellen sind, steht dort im Abschnitt *Screenshots*.
+
+In Confluence müssen Bilder als **Anhang** hochgeladen werden — der Markdown-Import überträgt
+sie nicht, die Verweise bleiben leer.
+
 ## Pflege
 
-Beide Seiten enthalten **verifizierte** Fakten mit Datum (CORS-Header, Statuscodes,
+Die Seiten enthalten **verifizierte** Fakten mit Datum (CORS-Header, Statuscodes,
 Zertifikatsaussteller). Der Dienst hat sich am 2026-09-03 innerhalb eines Tages **dreimal**
 geändert — zuletzt kam die ganze v2-Stufe dazu. Vor einem Termin also prüfen:
 
