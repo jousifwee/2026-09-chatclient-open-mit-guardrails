@@ -1,7 +1,8 @@
 # ADR-0015: Zwei Anwendungen in einem Workspace, getrennte Transporte
 
-**Status:** angenommen (2026-09-03) — **Vertrag inzwischen bekannt**, siehe „Nachtrag:
-v2 ist live". Offen bleibt allein die Krypto-Entscheidung für Anwendung 2.
+**Status:** angenommen (2026-09-03) — Vertrag inzwischen bekannt, siehe „Nachtrag: v2 ist
+live". Die dort offen gelassene Krypto-Entscheidung ist mit
+[ADR-0018](0018-app2-asymmetrisch-ecdh.md) getroffen.
 
 ## Kontext
 
@@ -123,7 +124,7 @@ nur, was die offenen Punkte dieser ADR beantwortet:
 | Spezifikation | `/openapi.json`, Schnappschuss im Repo |
 | Folgt der Absender aus dem Nachweis? | **Ja.** `from` gibt es nicht; ein mitgeschicktes `from` wird mit `400` abgewiesen |
 | Woher die Zugangsdaten? | **Selbstregistrierung** über `POST /v2/register`, je Teilnehmer ein Konto |
-| `WWW-Authenticate` / CORS-Header | **noch nicht verifiziert**, beim ersten Aufruf zu prüfen |
+| `WWW-Authenticate` / CORS-Header | **verifiziert:** kein `WWW-Authenticate` bei `401` (kein nativer Dialog), `Authorization` im Preflight erlaubt — aber **`PUT` nicht**, siehe [ADR-0018](0018-app2-asymmetrisch-ecdh.md) |
 | Gibt es Historie? | Die Ablage ist **dauerhaft**, Nachrichten verfallen aber weiterhin (`expiresAt`) |
 
 **Damit ist diese ADR nicht überholt, sondern bestätigt.** Der Absender folgt auf v2 aus dem
@@ -158,7 +159,11 @@ Fächer sind unerreichbar (kein `to`-Parameter), und es **gibt** einen Absender-
 
 ### Was noch offen ist
 
-**Die Krypto-Entscheidung für Anwendung 2.** Die v2-Stufe hat ein beglaubigtes
+~~**Die Krypto-Entscheidung für Anwendung 2.**~~ **Entschieden am 2026-09-03 mit
+[ADR-0018](0018-app2-asymmetrisch-ecdh.md): asymmetrisch, ECDH P-256.** Die Herleitung bleibt
+hier stehen, weil sie den Zusammenhang zu ADR-0007 erklärt.
+
+Die v2-Stufe hat ein beglaubigtes
 Schlüsselverzeichnis (`PUT /v2/me/key`, `GET /v2/directory`) und die Spezifikation nennt
 **JWK** als das im Kurs geltende Format — mit dem ausdrücklichen Hinweis, dass das Format
 „im Leitplanken-Set" festgelegt wird, also hier. Damit wird asymmetrische Verschlüsselung

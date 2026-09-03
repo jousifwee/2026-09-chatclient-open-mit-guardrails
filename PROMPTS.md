@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-03 13:38 (UTC+02:00) - 12 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-03 13:40 (UTC+02:00) - 12 Prompt(s)
 
 ---
 

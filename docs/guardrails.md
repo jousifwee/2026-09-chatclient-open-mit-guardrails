@@ -53,7 +53,10 @@ Fallen, die einen fertig aussehenden Aufruf scheitern lassen. Vollständige Begr
 | Auf v2 ein `from` im Rumpf senden | Absender kommt aus dem Nachweis, `400` | [api-messagehub-v2.md](api-messagehub-v2.md) |
 | Schlüssel aus `/v2/open-directory` beziehen | dort überschreibt jeder jeden Eintrag | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Grenzwerte des offenen Pfades auf v2 anwenden | für v2 nicht genannt | [api-messagehub-v2.md](api-messagehub-v2.md) |
-| Krypto in `apps/chat-v2` implementieren | noch nicht entschieden | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
+| `exportKey` auf den privaten Schlüssel | liefert ein JWK **mit `d`** — der private Schlüssel im Klartext | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Fingerabdruck über das JWK berechnen | JSON ist nicht kanonisch, Clients kämen zu verschiedenen Werten | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| `PUT /v2/me/key` aus dem Browser aufrufen | CORS lässt `PUT` nicht durch | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Stillschweigend auf Klartext zurückfallen, wenn ein Schlüssel fehlt | Vertraulichkeit lautlos weg | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Nachweise in `libs/domain` einführen | Schichtbruch, Nachweis ist Transportsache | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Zugangsdaten vorbelegen oder speichern | Geheimnis an Ruhe | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Den angekündigten Absender-Filter vorab senden | existiert nicht, `400` | [ADR-0010](adr/0010-striktes-anfrage-schema.md) |
@@ -119,8 +122,11 @@ Drei Wege, absichtlich verschieden hart:
 2. **Begründet** — jede Regel trägt ihren Grund. Eine Regel ohne Grund wird umgangen, sobald
    sie unbequem wird.
 3. **Erzwungen** — soweit die Werkzeugkette es hergibt: `.gitignore` für Geheimnisse,
-   Schema-Validierung im Client, Muster-Prüfung für Namen.
+   Schema-Validierung im Client, Muster-Prüfung für Namen, `extractable: false` für den
+   privaten Schlüssel ([ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md)) und **Tests für jede
+   Regel der Stufe 2** ([ADR-0017](adr/0017-teststack-vitest-playwright.md)).
 
-Stufe 3 ist noch dünn, und das ist bekannt. Ausführbare Guardrails (Hooks,
-Permission-Allowlist, Lint-Regeln gegen die verbotenen Muster aus Stufe 2) sind ein
-ausdrückliches Ziel dieses Projekts und noch nicht umgesetzt.
+Der dritte Weg war zunächst der dünnste. Mit ADR-0017 ist entschieden, dass jede Regel der
+Stufe 2 einen Test bekommt — eine Regel in einer Markdown-Datei wird gelesen, ein roter Test
+wird nicht übergangen. **Noch nicht umgesetzt** sind Hooks, eine Permission-Allowlist und
+Lint-Regeln gegen die verbotenen Muster; beides bleibt ausdrückliches Ziel.
