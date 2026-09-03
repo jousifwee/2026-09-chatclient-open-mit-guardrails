@@ -22,7 +22,10 @@ Aufbau und Regeln: [../conventions.md](../conventions.md).
 | [0012](0012-fehler-und-grenzfaelle.md) | Fehler- und Grenzfallbehandlung | angenommen |
 | [0013](0013-cors-ohne-credentials.md) | Kein `credentials: "include"` | angenommen |
 | [0014](0014-namen-kleinschreiben.md) | Namen kleinschreiben, Kollisionen damit auflösen | angenommen |
-| [0015](0015-zwei-apps-getrennte-transporte.md) | Zwei Anwendungen im Workspace, getrennte Transporte | angenommen; Krypto für App 2 offen |
+| [0015](0015-zwei-apps-getrennte-transporte.md) | Zwei Anwendungen im Workspace, getrennte Transporte | angenommen |
+| [0016](0016-browser-stack-angular21.md) | Browser-Stack: Angular 21, `@angular/build`, TypeScript 5.9, npm | angenommen |
+| [0017](0017-teststack-vitest-playwright.md) | Teststack: Vitest + Playwright, Guardrails als Tests | angenommen |
+| [0018](0018-app2-asymmetrisch-ecdh.md) | Anwendung 2 asymmetrisch: ECDH P-256, HKDF, AES-GCM | angenommen; `PUT`-Block offen |
 
 ## Angekündigte Änderungen am Dienst
 

@@ -36,7 +36,7 @@ offenen Pfad alles hing.
 Name ergibt **404**. Auf dem offenen Pfad war jeder Name sofort belieferbar.
 
 **3. Fremde Fächer sind nicht erreichbar.** `GET /v2/me/messages` hat **keinen
-`to`-Parameter` — der Empfänger ist immer der Aufrufer. Eine fremde Nachrichten-Kennung
+`to`-Parameter** — der Empfänger ist immer der Aufrufer. Eine fremde Nachrichten-Kennung
 ergibt beim Entnehmen **404, auch wenn sie existiert**; die Antwort verrät nicht, ob es die
 Nachricht gibt.
 
@@ -102,10 +102,15 @@ Die Trennung von Ansehen und Entnehmen ist wie auf dem offenen Pfad begründet: 
 öffentlich erreichbar, und Crawler, Link-Vorschauen oder Client-Wiederholungen würden
 Nachrichten sonst verbrauchen, bevor der Empfänger sie holt.
 
-### `PUT /v2/me/key` — eigenen öffentlichen Schlüssel setzen
+### `PUT /v2/me/key` — eigenen öffentlichen Schlüssel setzen · **aus dem Browser gesperrt**
 
 Rumpf `KeyDto` (`key`, opak). Überschreibt, idempotent — ein Konto hat genau einen Eintrag.
 `204` · `401`.
+
+> **⚠️ CORS lässt `PUT` nicht durch** (verifiziert, siehe unten). Aus einer Browser-Anwendung
+> ist dieser Endpunkt **nicht aufrufbar**. Der eigene Schlüssel geht daher bei
+> `POST /v2/register` mit; ein Wechsel ist aus dem Browser nicht möglich
+> ([ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md)).
 
 **Auf dieser Stufe ist der Eintrag beglaubigt:** nur der Kontoinhaber kann ihn setzen.
 
@@ -133,7 +138,9 @@ Zwei Endpunkte **ohne Nachweis**, deren erklärter Zweck es ist, kaputt zu sein:
 - `GET /v2/open-directory` → `OpenKeyEntryDto[]` (`name`, `material`, `updatedAt`,
   `expiresAt`). Verifiziert: liefert derzeit `[]`.
 - `PUT /v2/open-directory/{name}` → `204`. **Für JEDEN Namen, ohne Prüfung, ob er dir
-  gehört.**
+  gehört.** Aus dem Browser wegen CORS **nicht aufrufbar** — der Angriff wird von der
+  Kommandozeile vorgeführt, was ehrlicher ist: der Angreifer ist kein Knopf im Client des
+  Opfers.
 
 Wörtlich aus der Spezifikation:
 
@@ -187,11 +194,21 @@ Das gilt unabhängig vom Vertrag und ist in
 - **Kein `credentials: "include"`** — für einen selbst gesetzten Header nicht nötig; es würde
   stattdessen den browsereigenen Zugangsdaten-Speicher einbeziehen und die CORS-Wildcard
   brechen ([ADR-0013](adr/0013-cors-ohne-credentials.md)).
-- Der Header macht die Anfrage cross-origin **„non-simple"** → **Preflight**. Der Dienst muss
-  `Access-Control-Allow-Headers: Authorization` beantworten. **Noch nicht verifiziert** — beim
-  ersten echten Aufruf zu prüfen.
-- **`401` mit `WWW-Authenticate: Basic`** würde den nativen Anmeldedialog des Browsers
-  auslösen. Ob der Dienst diesen Header sendet, ist **noch nicht verifiziert**.
+- Der Header macht die Anfrage cross-origin **„non-simple"** → **Preflight**. **Verifiziert
+  am 2026-09-03:** der Dienst antwortet
+  `Access-Control-Allow-Headers: Content-Type,Authorization,X-API-Key` — der Nachweis darf
+  also mitgeschickt werden.
+- **Kein `WWW-Authenticate` bei `401`** (verifiziert): der native Anmeldedialog des Browsers
+  erscheint **nicht**. Die Anwendung behält die Kontrolle über den Anmeldezeitpunkt.
+- **⚠️ `PUT` ist nicht erlaubt.** `Access-Control-Allow-Methods` liefert
+  `GET,POST,DELETE,OPTIONS` — auf **jedem** Pfad, auch wenn der Preflight `PUT` ausdrücklich
+  anfragt (verifiziert an `/v2/me/key`, `/v2/open-directory/{name}`, `/v2/messages`). Damit
+  sind `PUT /v2/me/key` und `PUT /v2/open-directory/{name}` aus dem Browser **nicht
+  erreichbar**. Folgen und die zwei Wege heraus:
+  [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md).
+- `Access-Control-Max-Age: 86400` — ein zwischengespeicherter Preflight gilt 24 Stunden.
+  Nach einer serverseitigen CORS-Änderung in einem frischen Browserprofil prüfen.
+- `Access-Control-Expose-Headers: Retry-After` — `Retry-After` ist aus JavaScript lesbar.
 - Das Kennwort geht bei **jeder** Anfrage mit. HTTPS ist Pflicht.
 - **Zugangsdaten nur im Arbeitsspeicher**, nie vorbelegt, nie im Repo
   ([guardrails.md](guardrails.md)).

@@ -68,8 +68,16 @@ auf die fehlende ADR.
 13. **Keine hartkodierten Grenzwerte für v2.** Die Zahlen der Spezifikation (64 KB, 20, 500,
    64 MB, 60/min, 60 min) gelten ausdrücklich für den **offenen Pfad**. Für v2 sind sie nicht
    genannt: `413`, `429`, `503` behandeln, ohne die Schwelle zu kennen.
-14. **Krypto für `apps/chat-v2` ist noch nicht entschieden** — keine implementieren
-   (ADR-0015).
+14. **Krypto in `apps/chat-v2` ist asymmetrisch**: ECDH P-256 + HKDF-SHA-256 + AES-GCM,
+   Schlüsselpaar mit `extractable: false`, privater Schlüssel als `CryptoKey` in IndexedDB.
+   **Niemals** `exportKey` auf den privaten Schlüssel, und vor dem Veröffentlichen prüfen,
+   dass das JWK **kein `d`** enthält — gesendet werden nur `kty`, `crv`, `x`, `y`.
+   Fingerabdruck über `exportKey("raw", publicKey)`, nicht über das JWK (ADR-0018).
+15. **`PUT` ist im CORS des Hubs nicht erlaubt** (`Access-Control-Allow-Methods:
+   GET,POST,DELETE,OPTIONS`, verifiziert 2026-09-03). Also keinen Aufruf von
+   `PUT /v2/me/key` bauen: der Schlüssel geht bei `POST /v2/register` mit (ADR-0018).
+16. **Stack:** Angular `^21.2` mit `@angular/build`, TypeScript `~5.9.3`, npm (ADR-0016).
+   Tests mit Vitest und Playwright; jede Guardrail-Regel bekommt einen Test (ADR-0017).
 
 ## Grenzen des Hubs, die im Code auftauchen müssen
 

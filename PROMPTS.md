@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-03 13:31 (UTC+02:00) - 11 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-03 13:38 (UTC+02:00) - 12 Prompt(s)
 
 ---
 
@@ -123,3 +123,13 @@ Generiert von `tools/collect_prompts.py` am 2026-09-03 13:31 (UTC+02:00) - 11 Pr
 **Prompt:**
 
 > gugg noch mal, es gab eoin redeploy
+
+## 12. 2026-09-03 13:33:11 (UTC+02:00)
+
+- **UTC:** 2026-09-03 11:33:11Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> app 2 asymmetrisch, ja ang 21 vitest playwright, was noch offen?

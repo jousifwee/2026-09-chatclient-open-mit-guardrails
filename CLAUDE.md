@@ -79,8 +79,12 @@ Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
   (2026-09-03) in Betrieb. Vertrag in
   [docs/api-messagehub-v2.md](docs/api-messagehub-v2.md). Dort ist der Absender **aus dem
   Nachweis abgeleitet**, der Empfänger muss ein Konto sein, fremde Fächer sind unerreichbar,
-  und `?from=` filtert nach Absender. **Krypto für diese Anwendung ist noch nicht
-  entschieden** — bis dahin keine implementieren (ADR-0015).
+  und `?from=` filtert nach Absender. Krypto: **asymmetrisch**
+  ([ADR-0018](docs/adr/0018-app2-asymmetrisch-ecdh.md)).
+- **⚠️ `PUT` ist im CORS des Hubs nicht erlaubt** (verifiziert 2026-09-03): `PUT /v2/me/key`
+  und `PUT /v2/open-directory/{name}` sind aus dem Browser **nicht erreichbar**. Der eigene
+  Schlüssel geht daher bei `POST /v2/register` mit; ein Schlüsselwechsel ist aus dem Browser
+  nicht möglich (ADR-0018).
 - Geteilt werden `libs/domain`, `libs/payload`, `libs/store`, `libs/ui`. **`libs/domain` darf
   nichts über Nachweise wissen.**
 
@@ -92,8 +96,15 @@ Verbindlich, Begründungen in den verlinkten ADRs:
   ([ADR-0004](docs/adr/0004-frontend-angular-material3.md))
 - **Kein eigenes Backend.** Der Client spricht direkt mit dem MessageHub
   ([ADR-0003](docs/adr/0003-nur-offener-pfad.md))
-- **Krypto:** WebCrypto, AES-GCM mit PBKDF2-Ableitung, umschaltbar gegen Klartext
+- **Angular `^21.2`** mit `@angular/build` (esbuild), TypeScript `~5.9.3`, npm mit
+  `package-lock.json` ([ADR-0016](docs/adr/0016-browser-stack-angular21.md))
+- **Tests:** Vitest (Unit/Component) + Playwright (E2E); die Guardrails der Stufe 2 sind als
+  Tests zu schreiben ([ADR-0017](docs/adr/0017-teststack-vitest-playwright.md))
+- **Krypto App 1:** WebCrypto, AES-GCM mit PBKDF2-Ableitung, umschaltbar gegen Klartext
   ([ADR-0007](docs/adr/0007-krypto-umschaltbar.md))
+- **Krypto App 2:** asymmetrisch — ECDH P-256, HKDF-SHA-256, AES-GCM; privater Schlüssel
+  **nicht exportierbar** in IndexedDB; Fingerabdruck mündlich vergleichen
+  ([ADR-0018](docs/adr/0018-app2-asymmetrisch-ecdh.md))
 - **Keine Stufen-Abstraktion.** Token und OIDC sind in diesem Release ignoriert
   ([ADR-0003](docs/adr/0003-nur-offener-pfad.md))
 - **Lokale Persistenz:** IndexedDB, einzige Historie überhaupt
