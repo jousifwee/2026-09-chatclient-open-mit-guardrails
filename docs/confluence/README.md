@@ -35,8 +35,9 @@ sie nicht, die Verweise bleiben leer.
 ## Pflege
 
 Die Seiten enthalten **verifizierte** Fakten mit Datum (CORS-Header, Statuscodes,
-Zertifikatsaussteller). Der Dienst hat sich am 2026-09-03 innerhalb eines Tages **dreimal**
-geändert — zuletzt kam die ganze v2-Stufe dazu. Vor einem Termin also prüfen:
+Zertifikatsaussteller). Der Dienst hat sich am 2026-09-03 innerhalb eines Tages **viermal**
+geändert — die v2-Stufe kam dazu, und `PUT` wurde im CORS freigegeben. Vor einem Termin also
+prüfen:
 
 ```bash
 curl -s https://utz-messagehub.itzcloud.de/health

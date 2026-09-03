@@ -55,7 +55,8 @@ Fallen, die einen fertig aussehenden Aufruf scheitern lassen. Vollständige Begr
 | Grenzwerte des offenen Pfades auf v2 anwenden | für v2 nicht genannt | [api-messagehub-v2.md](api-messagehub-v2.md) |
 | `exportKey` auf den privaten Schlüssel | liefert ein JWK **mit `d`** — der private Schlüssel im Klartext | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Fingerabdruck über das JWK berechnen | JSON ist nicht kanonisch, Clients kämen zu verschiedenen Werten | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
-| `PUT /v2/me/key` aus dem Browser aufrufen | CORS lässt `PUT` nicht durch | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Mit einem **ausgemusterten** Schlüssel verschlüsseln | er ist nur noch zum Entschlüsseln da | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Einen Schlüsselwechsel des Gegenübers still übernehmen | ein Wechsel ist von einem Angriff nicht zu unterscheiden | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Stillschweigend auf Klartext zurückfallen, wenn ein Schlüssel fehlt | Vertraulichkeit lautlos weg | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Nachweise in `libs/domain` einführen | Schichtbruch, Nachweis ist Transportsache | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Zugangsdaten vorbelegen oder speichern | Geheimnis an Ruhe | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |

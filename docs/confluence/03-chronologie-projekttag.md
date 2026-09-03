@@ -28,7 +28,7 @@ Anwendungscode.** Das ist kein Rückstand, das war die Übung.
 | 17:28 | | **Commit 1** — Doku-Grundlage, Push nach GitHub |
 | 17:45 | | **Commit 2** — Architektur, Bedienkonzept, **14 ADRs** |
 
-### Tag 2 — Donnerstag, 2026-09-03 (11:47 – 15:50)
+### Tag 2 — Donnerstag, 2026-09-03 (11:47 – 16:40)
 
 | Zeit | Eingabe | Ergebnis |
 |---|---|---|
@@ -38,7 +38,7 @@ Anwendungscode.** Das ist kein Rückstand, das war die Übung.
 | 12:36 | **„aber der v2 dienst sollte doch auch im openapi json sein?"** | Tiefere Prüfung: Volltext, lazy geladene Chunks. Immer noch nichts |
 | 13:26 | **„gugg noch mal, es gab ein redeploy"** | `502 Bad Gateway` → Warten → `0.1.29`: **v2 ist da** |
 | 13:31 | | **Commit 4** — v2-Vertrag dokumentiert, ADR-0015 entblockt |
-| 13:33 | „app 2 asymmetrisch, ja ang 21 vitest playwright, was noch offen?" | ADR-0016/0017/0018. Dabei entdeckt: **`PUT` ist im CORS gesperrt** |
+| 13:33 | „app 2 asymmetrisch, ja ang 21 vitest playwright, was noch offen?" | ADR-0016/0017/0018. Dabei entdeckt: **`PUT` war im CORS gesperrt** |
 | 13:40 | | **Commit 5 + 6** |
 | 13:43 | „können wir auf itzcloud so etwas hosten was wie netlify hochladen erlaubt?" | Drei Wege bewertet. Nebenbefund: **TLS-Aussage im Repo war falsch** |
 | 13:45 | | **Commit 7** — TLS-Ursache richtiggestellt |
@@ -47,6 +47,8 @@ Anwendungscode.** Das ist kein Rückstand, das war die Übung.
 | 15:37 | „wenn wir den service von einem fullstack aus ansprechen, dann haben wir ja kein problem – oder?" | Ja — aber zwei Entwurfsfragen kommen mit |
 | 15:44 | „bereite mal confluence seiten vor" | Die beiden Seiten davor |
 | 15:49 | | **Commit 8 + 9** |
+| 16:0x | „jetzt noch eine seite für die chronologie" | Diese Seite |
+| 16:4x | **„schau mal, ob das Deployment schon stattgefunden hat"** | `0.1.34`: **`PUT` ist freigegeben.** Sieben Dateien nachgezogen |
 
 ---
 
@@ -59,9 +61,14 @@ Das war nicht geplant und wurde der beste Teil der Übung.
 | `0.1.16+6afc10e` | 2026-09-02 11:40 | Stand bei der ersten Prüfung: offener Pfad, OIDC-Rudiment, **Token-Stufe angekündigt** |
 | `0.1.24+ee364d0` | 2026-09-03 07:56 | **Token-Stufe entfernt** — samt Security-Schema. Neu: Hinweis an Coding-Agenten, Seite `/anbindung` |
 | `0.1.29+039ba26` | 2026-09-03 11:25 | **v2-Stufe komplett**: Selbstregistrierung, Basic Auth, beglaubigtes Schlüsselverzeichnis, absichtlich kaputtes Spielfeld |
+| `0.1.34+69b185d` | 2026-09-03 14:32 | **`PUT` im CORS freigegeben** — `Allow-Methods` enthält jetzt `PUT`. Sonst keine Änderung an Endpunkten oder Schemas |
 
 Zwischen Prompt 9 („sieh 2 apps vor") und Prompt 11 („gugg noch mal") lagen 96 Minuten. In
 denen erschien der Dienst, dessen Fehlen ich zweimal belegt hatte.
+
+Die vierte Fassung war eine **Reaktion auf einen Befund dieser Sitzung**: der `PUT`-Block
+wurde dokumentiert, gemeldet und noch am selben Tag serverseitig behoben. Nicht per
+Dev-Proxy, nicht per BFF — mit einem Eintrag in der CORS-Konfiguration.
 
 **Warum das gut ausging:** Der eingefrorene Vertrags-Schnappschuss im Repo
 (`docs/api/openapi.yaml`) machte jede Änderung als Diff sichtbar, statt als rätselhaftes
@@ -114,18 +121,29 @@ von drei belegten Namen.
 Festgelegt wurde deshalb: kleinschreiben für Schlüssel und Anzeige, **antworten an das rohe
 `from`** (ADR-0014).
 
-### 5. `PUT` ist im CORS gesperrt — obwohl in der Spezifikation
+### 5. `PUT` war im CORS gesperrt — obwohl in der Spezifikation
 
 ```
 OPTIONS /v2/me/key   (Access-Control-Request-Method: PUT)
--> 204   Access-Control-Allow-Methods: GET,POST,DELETE,OPTIONS
+-> 204   Access-Control-Allow-Methods: GET,POST,DELETE,OPTIONS      # 0.1.29
 ```
 
-Auf **jedem** Pfad, auch wenn der Preflight `PUT` ausdrücklich anfragt. Damit sind
-`PUT /v2/me/key` und `PUT /v2/open-directory/{name}` aus dem Browser unerreichbar.
+Auf **jedem** Pfad, auch wenn der Preflight `PUT` ausdrücklich anfragte. `PUT /v2/me/key` und
+`PUT /v2/open-directory/{name}` standen in der Spezifikation und waren aus dem Browser
+trotzdem unerreichbar.
 
 Ohne diesen Test wäre ein Knopf „Schlüssel wechseln" gebaut worden, der im Termin an CORS
-scheitert — und die Suche hätte beim Dienst begonnen. → **Screenshot 3**
+scheitert — und die Suche hätte beim Dienst begonnen statt bei der Methodenliste.
+
+**Aufgelöst am selben Tag** (`0.1.34`, `Allow-Methods` mit `PUT`), Ende-zu-Ende nachgeprüft.
+Zwei Lehrsätze bleiben:
+
+- **Die Spezifikation sagt nicht, was der Browser darf** — das sagt der Preflight.
+- **Nach einer CORS-Änderung gilt `Access-Control-Max-Age: 86400`.** Ein Browser mit
+  zwischengespeichertem Preflight scheitert bis zu 24 Stunden weiter. In einem frischen Profil
+  prüfen, sonst hält man einen Cache für einen Fehler.
+
+→ **Screenshot 3** (am besten beide Fassungen nebeneinander)
 
 ### 6. Die TLS-Aussage im eigenen Repo war falsch
 
@@ -164,6 +182,9 @@ Für die Glaubwürdigkeit gehört das dazu:
 - **Ein `bash.exe.stackdump`** wurde mitversioniert und musste wieder heraus.
 - **Ein Entscheidungsdialog** wurde abgebrochen, weil er für einen Screenshot gebraucht wurde
   — die Entscheidungen kamen dann als Text.
+- **Sieben Dateien mussten nachgezogen werden**, als `PUT` freigegeben wurde. Das ist der
+  Preis der Gründlichkeit: ein Befund, der an sieben Stellen dokumentiert ist, muss an sieben
+  Stellen widerrufen werden. Der Nutzen ist derselbe Umstand — die Doku sagt genau, wo.
 
 ---
 
@@ -178,7 +199,7 @@ Ablage: [`../../tools/images/`](../../tools/images/). In Confluence müssen die 
 | 2 | Live-Prüfung: `?from=` ergibt `400 property from should not exist` | offen |
 | 3 | Preflight: `Access-Control-Allow-Methods` ohne `PUT` | offen |
 | 4 | Zertifikatsaussteller `sofia.itz-rostock.de` gegen `github.com` | offen |
-| 5 | Die drei Hub-Fassungen: `/health` bzw. der Spec-Diff | offen |
+| 5 | Die vier Hub-Fassungen: `/health` bzw. der Spec-Diff | offen |
 | 6 | ADR-Index auf GitHub (`docs/adr/README.md`) | offen |
 | 7 | Repo-Baum auf GitHub | offen |
 
@@ -222,7 +243,8 @@ curl -s https://utz-messagehub.itzcloud.de/openapi.yaml | diff -u docs/api/opena
 | Markdown-Dateien | 40 |
 | Commits | 10, Stand dieser Seite |
 | Zeilen Anwendungscode | **0** |
-| Fassungswechsel des Dienstes während der Arbeit | 3 |
+| Fassungswechsel des Dienstes während der Arbeit | 4 |
+| davon als Reaktion auf einen Befund dieser Sitzung | 1 |
 
 Die letzte Zeile ist das Ergebnis, nicht das Versäumnis: Vor dem ersten `ng new` steht fest,
 welchen Vertrag der Client hat, welche Zustände eine Nachricht kennt, wann entnommen wird, wie

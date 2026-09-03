@@ -1,6 +1,6 @@
 # Fullstack-App mit BFF als Proxy vor dem MessageHub v2
 
-> Vorlage für Confluence. Stand 2026-09-03, geprüft gegen `0.1.29+039ba26`.
+> Vorlage für Confluence. Stand 2026-09-03, geprüft gegen `0.1.34+69b185d`.
 > Gegenstück zur Seite *UTZ MessageHub v2 direkt aus einer HTML-Seite ansprechen*.
 
 **Ziel:** Angular-SPA im Browser, dahinter ein eigener Server, der den MessageHub anspricht.
@@ -17,7 +17,7 @@ für Web und Bearer für native Clients (EAST-ADR-0023).
 
 | Problem im Browser | Mit BFF |
 |---|---|
-| `PUT /v2/me/key` per CORS blockiert | ✅ CORS ist ein **Browser**-Mechanismus. Server-zu-Server gibt es keinen Preflight |
+| CORS-Regeln des Hubs überhaupt | ✅ CORS ist ein **Browser**-Mechanismus. Server-zu-Server gibt es keinen Preflight |
 | `credentials`/SameSite-Fragen gegen den Hub | ✅ entfällt — der Browser ruft nur die eigene Herkunft |
 | v2-Kennwort liegt im Browser | ✅ kann im BFF bleiben |
 | kein serverseitiges Rate-Limiting, keine Protokollierung | ✅ jetzt möglich |
@@ -31,9 +31,11 @@ für Web und Bearer für native Clients (EAST-ADR-0023).
   Umbau unsichtbar. Wenn das Sichtbarmachen der Zweck war, ist das ein Verlust — dieselbe
   Kritik wie am Dev-Proxy, nur eine Ebene höher.
 
-> **Wenn es nur um `PUT` geht, ist der BFF der Vorschlaghammer.** `PUT` fehlt lediglich in
-> `Access-Control-Allow-Methods` des Hubs — ein Eintrag in der CORS-Konfiguration, und das
-> Problem ist weg. Ein BFF rechtfertigt sich über die anderen Punkte, nicht über CORS.
+> **Der Anlassfall hat sich erledigt — und zeigt genau das.** Bis `0.1.29` war
+> `PUT /v2/me/key` aus dem Browser unerreichbar, weil `PUT` in
+> `Access-Control-Allow-Methods` fehlte. Der Weg heraus war **ein Eintrag in der
+> CORS-Konfiguration** des Dienstes (`0.1.34`), nicht ein BFF. Ein BFF rechtfertigt sich über
+> die anderen Punkte in dieser Tabelle, nicht über CORS.
 
 ---
 
@@ -214,7 +216,7 @@ auf den Dienst statt auf die verursachende Stelle.)
 
 | Wenn … | dann |
 |---|---|
-| nur `PUT` blockiert | **eine Zeile CORS am Hub**, kein Umbau |
+| eine Methode ist im Browser blockiert | **eine Zeile CORS am Hub**, kein Umbau — so gelöst bei `PUT` in `0.1.34` |
 | CORS und SameSite sollen sichtbar bleiben (Lehrzweck) | **direkt aus dem Browser**, siehe Seite 1 |
 | Kennwort soll nicht in den Browser | **BFF** — separater NestJS-Dienst, Hausmuster |
 | serverseitiges Rate-Limiting / Protokollierung nötig | **BFF** |

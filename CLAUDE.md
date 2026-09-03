@@ -82,10 +82,10 @@ Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
   Nachweis abgeleitet**, der Empfänger muss ein Konto sein, fremde Fächer sind unerreichbar,
   und `?from=` filtert nach Absender. Krypto: **asymmetrisch**
   ([ADR-0018](docs/adr/0018-app2-asymmetrisch-ecdh.md)).
-- **⚠️ `PUT` ist im CORS des Hubs nicht erlaubt** (verifiziert 2026-09-03): `PUT /v2/me/key`
-  und `PUT /v2/open-directory/{name}` sind aus dem Browser **nicht erreichbar**. Der eigene
-  Schlüssel geht daher bei `POST /v2/register` mit; ein Schlüsselwechsel ist aus dem Browser
-  nicht möglich (ADR-0018).
+- **`PUT` ist erlaubt** seit `0.1.34+69b185d` (verifiziert). Schlüsselwechsel über
+  `PUT /v2/me/key` ist möglich — dabei gilt: **ausgemusterte Schlüssel bleiben in IndexedDB**
+  und werden nur zum Entschlüsseln benutzt, und der Fingerabdruck muss **erneut mündlich**
+  verglichen werden (ADR-0018).
 - Geteilt werden `libs/domain`, `libs/payload`, `libs/store`, `libs/ui`. **`libs/domain` darf
   nichts über Nachweise wissen.**
 

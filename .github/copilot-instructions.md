@@ -73,9 +73,11 @@ auf die fehlende ADR.
    **Niemals** `exportKey` auf den privaten Schlüssel, und vor dem Veröffentlichen prüfen,
    dass das JWK **kein `d`** enthält — gesendet werden nur `kty`, `crv`, `x`, `y`.
    Fingerabdruck über `exportKey("raw", publicKey)`, nicht über das JWK (ADR-0018).
-15. **`PUT` ist im CORS des Hubs nicht erlaubt** (`Access-Control-Allow-Methods:
-   GET,POST,DELETE,OPTIONS`, verifiziert 2026-09-03). Also keinen Aufruf von
-   `PUT /v2/me/key` bauen: der Schlüssel geht bei `POST /v2/register` mit (ADR-0018).
+15. **Schlüsselwechsel:** `PUT /v2/me/key` ist seit `0.1.34` erlaubt. Beim Wechsel bleibt
+   der alte private Schlüssel in IndexedDB (`retired`) und wird **nur zum Entschlüsseln**
+   benutzt — mit einem ausgemusterten Schlüssel wird nie verschlüsselt. Der Fingerabdruck
+   ändert sich, jede frühere mündliche Bestätigung ist ungültig, und ein Wechsel ist von
+   einem Angriff nicht zu unterscheiden: nie still übernehmen (ADR-0018).
 16. **Stack:** Angular `^21.2` mit `@angular/build`, TypeScript `~5.9.3`, npm (ADR-0016).
    Tests mit Vitest und Playwright; jede Guardrail-Regel bekommt einen Test (ADR-0017).
 

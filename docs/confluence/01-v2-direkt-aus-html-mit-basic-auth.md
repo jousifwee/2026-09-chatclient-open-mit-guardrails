@@ -1,6 +1,6 @@
 # UTZ MessageHub v2 direkt aus einer HTML-Seite ansprechen (Basic Auth)
 
-> Vorlage für Confluence. Stand 2026-09-03, geprüft gegen `0.1.29+039ba26`.
+> Vorlage für Confluence. Stand 2026-09-03, geprüft gegen `0.1.34+69b185d`.
 > Basis: `https://utz-messagehub.itzcloud.de` · Spezifikation `/openapi.json`
 
 **Ziel:** eine einzelne HTML-Datei, kein Framework, kein Build. Sie registriert ein Konto,
@@ -193,7 +193,7 @@ Geprüft am 2026-09-03 mit Preflight-Anfragen gegen `/v2/me/key`,
 
 ```
 Access-Control-Allow-Origin:   *
-Access-Control-Allow-Methods:  GET,POST,DELETE,OPTIONS
+Access-Control-Allow-Methods:  GET,POST,PUT,DELETE,OPTIONS
 Access-Control-Allow-Headers:  Content-Type,Authorization,X-API-Key
 Access-Control-Expose-Headers: Retry-After
 Access-Control-Max-Age:        86400
@@ -207,12 +207,19 @@ Access-Control-Max-Age:        86400
 | `GET /v2/me/messages` | ✅ (auch mit `?from=`) |
 | `DELETE /v2/me/messages/{id}` | ✅ |
 | `GET /v2/directory` | ✅ |
-| **`PUT /v2/me/key`** | ❌ **CORS: `PUT` ist nicht in `Allow-Methods`** |
-| **`PUT /v2/open-directory/{name}`** | ❌ dito |
+| `PUT /v2/me/key` | ✅ **seit `0.1.34`** |
+| `PUT /v2/open-directory/{name}` | ✅ seit `0.1.34` |
 
-**Folge:** Den eigenen öffentlichen Schlüssel kann man aus dem Browser nur **bei der
-Registrierung** hinterlegen (`key` im `RegisterDto`, `POST` ist erlaubt). Ein Wechsel geht
-nicht — dafür braucht es die Kommandozeile oder einen BFF.
+**Lehrstück am Rand:** Bis `0.1.29` lieferte der Dienst `Allow-Methods: GET,POST,DELETE,OPTIONS`
+— `PUT` fehlte, auf **jedem** Pfad, auch wenn der Preflight es ausdrücklich anfragte. Die
+Endpunkte standen in der Spezifikation, waren aus dem Browser aber unerreichbar, und die
+Fehlermeldung sprach von CORS statt von der Methode. Behoben wurde es mit **einem Eintrag in
+der CORS-Konfiguration** des Dienstes.
+
+Zwei Dinge, die man daraus mitnimmt: Die Spezifikation sagt nicht, was der **Browser** darf —
+das sagt der Preflight. Und nach einer CORS-Änderung gilt `Access-Control-Max-Age: 86400`: ein
+Browser mit zwischengespeichertem Preflight scheitert bis zu 24 Stunden weiter. In einem
+frischen Profil prüfen.
 
 ---
 
@@ -236,7 +243,17 @@ Whitelist (`{"message":["property from should not exist"],…}` — `message` is
 
 **4. `btoa` und Nicht-ASCII.** Siehe Schritt 2.
 
-**5. `PUT`.** Siehe Schritt 4. Nicht suchen — es ist CORS, nicht dein Code.
+**5. Die Spezifikation ist nicht der Preflight.** Ein Endpunkt kann dokumentiert und aus dem
+Browser trotzdem unerreichbar sein, wenn seine Methode nicht in `Access-Control-Allow-Methods`
+steht — genau das war bis `0.1.29` bei `PUT` der Fall. Bei einem unerklärlichen Fehlschlag
+also erst den Preflight ansehen, nicht den eigenen Code:
+
+```bash
+curl -s -X OPTIONS -D - -o /dev/null \
+  -H "Origin: https://example.invalid" \
+  -H "Access-Control-Request-Method: PUT" \
+  https://utz-messagehub.itzcloud.de/v2/me/key | grep -i access-control
+```
 
 **6. Das Kennwort im DOM.** In diesem Minimalbeispiel steht es in einem Eingabefeld und geht
 bei jedem Aufruf mit. Für eine Übung in Ordnung, für alles andere nicht: es liegt im

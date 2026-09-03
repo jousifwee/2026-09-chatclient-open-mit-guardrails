@@ -1,7 +1,7 @@
 # Der v2-Vertrag des UTZ MessageHub — Basic Auth, Konten, Schlüsselverzeichnis
 
 Basis: `https://utz-messagehub.itzcloud.de` · Schnappschuss in
-[`api/openapi.yaml`](api/openapi.yaml) (Fassung `0.1.29+039ba26`, geholt am 2026-09-03).
+[`api/openapi.yaml`](api/openapi.yaml) (Fassung `0.1.34+69b185d`, geholt am 2026-09-03).
 
 Gegenstück zu [api-messagehub.md](api-messagehub.md), das den **offenen Pfad** beschreibt.
 Wieder gilt: hier steht **nur, was verifiziert ist** — aus der Spezifikation gelesen oder am
@@ -102,15 +102,18 @@ Die Trennung von Ansehen und Entnehmen ist wie auf dem offenen Pfad begründet: 
 öffentlich erreichbar, und Crawler, Link-Vorschauen oder Client-Wiederholungen würden
 Nachrichten sonst verbrauchen, bevor der Empfänger sie holt.
 
-### `PUT /v2/me/key` — eigenen öffentlichen Schlüssel setzen · **aus dem Browser gesperrt**
+### `PUT /v2/me/key` — eigenen öffentlichen Schlüssel setzen
 
 Rumpf `KeyDto` (`key`, opak). Überschreibt, idempotent — ein Konto hat genau einen Eintrag.
 `204` · `401`.
 
-> **⚠️ CORS lässt `PUT` nicht durch** (verifiziert, siehe unten). Aus einer Browser-Anwendung
-> ist dieser Endpunkt **nicht aufrufbar**. Der eigene Schlüssel geht daher bei
-> `POST /v2/register` mit; ein Wechsel ist aus dem Browser nicht möglich
-> ([ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md)).
+Ende-zu-Ende verifiziert am 2026-09-03 gegen `0.1.34`: `204`, der Schlüssel erscheint danach
+in `GET /v2/directory`, ein zweites `PUT` ersetzt ihn.
+
+> **Bis `0.1.29` war dieser Endpunkt aus dem Browser gesperrt**, weil `PUT` in
+> `Access-Control-Allow-Methods` fehlte. Mit `0.1.34` ist das behoben. Die Folgen für den
+> Schlüsselwechsel — ausgemusterte Schlüssel behalten, Fingerabdruck erneut mündlich
+> vergleichen — stehen in [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md).
 
 **Auf dieser Stufe ist der Eintrag beglaubigt:** nur der Kontoinhaber kann ihn setzen.
 
@@ -138,9 +141,12 @@ Zwei Endpunkte **ohne Nachweis**, deren erklärter Zweck es ist, kaputt zu sein:
 - `GET /v2/open-directory` → `OpenKeyEntryDto[]` (`name`, `material`, `updatedAt`,
   `expiresAt`). Verifiziert: liefert derzeit `[]`.
 - `PUT /v2/open-directory/{name}` → `204`. **Für JEDEN Namen, ohne Prüfung, ob er dir
-  gehört.** Aus dem Browser wegen CORS **nicht aufrufbar** — der Angriff wird von der
-  Kommandozeile vorgeführt, was ehrlicher ist: der Angreifer ist kein Knopf im Client des
-  Opfers.
+  gehört.** Seit `0.1.34` auch aus dem Browser aufrufbar (verifiziert). Ob Anwendung 2 das
+  anbietet, ist offen — von der Kommandozeile vorgeführt ist es ehrlicher, weil der Angreifer
+  dort kein Knopf im Client des Opfers ist.
+- Beobachtet: Einträge des Spielfelds tragen ein `expiresAt` von **etwa 48 Stunden** (gesetzt
+  2026-09-03, verfällt 2026-09-05). Die Spezifikation nennt keine Dauer — also nicht darauf
+  bauen.
 
 Wörtlich aus der Spezifikation:
 
@@ -200,12 +206,10 @@ Das gilt unabhängig vom Vertrag und ist in
   also mitgeschickt werden.
 - **Kein `WWW-Authenticate` bei `401`** (verifiziert): der native Anmeldedialog des Browsers
   erscheint **nicht**. Die Anwendung behält die Kontrolle über den Anmeldezeitpunkt.
-- **⚠️ `PUT` ist nicht erlaubt.** `Access-Control-Allow-Methods` liefert
-  `GET,POST,DELETE,OPTIONS` — auf **jedem** Pfad, auch wenn der Preflight `PUT` ausdrücklich
-  anfragt (verifiziert an `/v2/me/key`, `/v2/open-directory/{name}`, `/v2/messages`). Damit
-  sind `PUT /v2/me/key` und `PUT /v2/open-directory/{name}` aus dem Browser **nicht
-  erreichbar**. Folgen und die zwei Wege heraus:
-  [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md).
+- **`PUT` ist erlaubt** — seit `0.1.34+69b185d`. `Access-Control-Allow-Methods` liefert
+  `GET,POST,PUT,DELETE,OPTIONS` (verifiziert). Bis `0.1.29` fehlte `PUT`, und
+  `PUT /v2/me/key` war aus dem Browser unerreichbar; die Geschichte samt Folgen für den
+  Schlüsselwechsel steht in [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md).
 - `Access-Control-Max-Age: 86400` — ein zwischengespeicherter Preflight gilt 24 Stunden.
   Nach einer serverseitigen CORS-Änderung in einem frischen Browserprofil prüfen.
 - `Access-Control-Expose-Headers: Retry-After` — `Retry-After` ist aus JavaScript lesbar.

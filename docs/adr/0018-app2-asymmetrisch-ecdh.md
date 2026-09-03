@@ -1,6 +1,7 @@
 # ADR-0018: Anwendung 2 verschlüsselt asymmetrisch — ECDH P-256, HKDF, AES-GCM
 
-**Status:** angenommen (2026-09-03)
+**Status:** angenommen (2026-09-03) · Nachtrag 2026-09-03: der `PUT`-Block ist serverseitig
+aufgehoben, Schlüsselwechsel ist möglich
 
 ## Kontext
 
@@ -69,10 +70,17 @@ sonst sind beide Fälle im UI nicht auseinanderzuhalten.
    (`mode: "plain"` bleibt gültig, die Nutzlast ist auch auf v2 opak). Kein stilles
    Zurückfallen auf Klartext.
 
-## ⚠️ Einschränkung: `PUT` ist im CORS nicht erlaubt
+## `PUT` war gesperrt — seit `0.1.34+69b185d` freigegeben
 
-**Verifiziert am 2026-09-03** mit Preflight-Anfragen gegen `/v2/me/key`,
-`/v2/open-directory/{name}` und `/v2/messages`:
+**Erledigt.** Der Befund unten stand einen halben Tag; am 2026-09-03 um 14:32 Uhr (UTC) wurde
+der Dienst mit angepasster CORS-Konfiguration neu ausgerollt. Die Bestandsaufnahme bleibt
+stehen, weil die Folgeregeln daraus hergeleitet sind — was jetzt gilt, steht im **Nachtrag**
+am Ende dieses Abschnitts.
+
+### Der Befund (2026-09-03, `0.1.29+039ba26`)
+
+Preflight-Anfragen gegen `/v2/me/key`, `/v2/open-directory/{name}` und `/v2/messages`
+ergaben:
 
 ```
 OPTIONS /v2/me/key
@@ -89,48 +97,48 @@ einer Browser-Anwendung **nicht erreichbar**:
 - `PUT /v2/me/key` — den eigenen Schlüssel setzen oder **wechseln**
 - `PUT /v2/open-directory/{name}` — den Angriff vorführen
 
-Folgen, mit denen gebaut wird:
+Der Weg heraus war **serverseitig**, nicht per Dev-Proxy: die Methodenliste kommt aus der
+CORS-Konfiguration des Dienstes, dort fehlte `PUT` einfach. Ein Eintrag mehr — Entwicklung und
+Betrieb verhalten sich gleich, und CORS bleibt als echter Mechanismus sichtbar. Ein
+Angular-Dev-Proxy hätte es nur bei `ng serve` behoben und im gebauten Bundle wieder gebrochen.
 
-- **Der Schlüssel wird bei der Registrierung mitgegeben.** `POST /v2/register` nimmt ein
-  optionales Feld `key`, und `POST` ist erlaubt. Anwendung 2 erzeugt das Paar also **vor** der
-  Registrierung und veröffentlicht den öffentlichen Teil in demselben Aufruf.
-- **Schlüsselwechsel ist aus dem Browser nicht möglich.** Das UI sagt das, statt einen Knopf
-  anzubieten, der an CORS scheitert. Wer wechseln will, legt ein neues Konto an.
-- **Der Verlust des privaten Schlüssels ist endgültig.** Er ist nicht exportierbar und liegt
-  nur in diesem Browser; Browserdaten gelöscht heißt Konto unbrauchbar.
-- **Der Angriff wird von der Kommandozeile vorgeführt**, nicht aus der Anwendung. Das ist
-  didaktisch sogar ehrlicher: der Angreifer ist kein Knopf im Client des Opfers.
+### Nachtrag (2026-09-03, `0.1.34+69b185d`) — was jetzt gilt
 
-Bis auf Weiteres gilt der verifizierte Befund, nicht die Spezifikation — die kennt `PUT`, der
-Browser bekommt ihn nicht.
+```
+Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS
+```
 
-### Offen: wie der `PUT`-Block aufgelöst wird
+**Ende-zu-Ende verifiziert** mit einem synthetischen Wegwerf-Konto: `POST /v2/register` →
+`201`, `PUT /v2/me/key` → `204`, der Schlüssel steht danach in `GET /v2/directory`, ein
+zweites `PUT` ersetzt ihn (`204`, idempotent). Auch `PUT /v2/open-directory/{name}` → `204`.
 
-Zwei Wege, und sie sind nicht gleichwertig:
+- **Der Schlüssel kann weiter bei der Registrierung mitgegeben werden** (`key` im
+  `RegisterDto`) — ein Aufruf statt zwei, und das Konto ist nie ohne Schlüssel sichtbar. Das
+  bleibt der Weg beim Anlegen.
+- **Schlüsselwechsel ist jetzt möglich** und gehört ins Bedienkonzept von Anwendung 2.
+- **Das Spielfeld ist aus dem Browser vorführbar.** Ob Anwendung 2 das anbietet, ist eine
+  UX-Entscheidung und **nicht** entschieden; der Angriff von der Kommandozeile bleibt die
+  ehrlichere Vorführung, weil der Angreifer dort kein Knopf im Client des Opfers ist.
 
-**a) Serverseitig `PUT` freigeben.** Der Dienst ist eine NestJS-Anwendung (erkennbar am
-Fehlerrumpf `{"message":[…],"error":…,"statusCode":…}`). Die Methodenliste kommt aus der
-CORS-Konfiguration; dort fehlt `PUT` einfach. Ein Eintrag mehr, und der Befund oben ist
-erledigt — Entwicklung und Betrieb verhalten sich gleich, und CORS bleibt als echter
-Mechanismus sichtbar. **Vorzuziehen.**
+### Was am Wechsel hängt — und deshalb hier festgelegt wird
 
-> Beim Nachprüfen zu beachten: Die Antwort setzt `Access-Control-Max-Age: 86400`. Ein Browser,
-> der den alten Preflight schon zwischengespeichert hat, scheitert bis zu 24 Stunden weiter.
-> Nach der Änderung in einem frischen Profil prüfen, nicht im offenen Fenster.
+Ein Schlüsselwechsel ist bei statischem ECDH nicht folgenlos:
 
-**b) Dev-Server-Proxy in Angular.** `ng serve` mit `proxy.config.json` macht die Aufrufe
-gleicher Herkunft; CORS entfällt vollständig, `PUT` inbegriffen. Löst das Problem aber **nur
-in der Entwicklung**: ein gebautes Bundle auf statischem Hosting hat keinen Proxy, und dann
-ist der Befund zurück. Das ist genau die Sorte Unterschied zwischen Entwicklung und Betrieb,
-die dieses Projekt sonst dokumentiert — und es nimmt dem Kurs die Gelegenheit, CORS überhaupt
-zu sehen.
+1. **Alte Nachrichten brauchen den alten privaten Schlüssel.** Wird er verworfen, sind alle
+   bereits empfangenen Chiffrate endgültig unlesbar. Festlegung: **ausgemusterte Schlüssel
+   bleiben in IndexedDB**, als `retired` markiert, und werden **ausschließlich zum
+   Entschlüsseln** benutzt. Mit einem ausgemusterten Schlüssel wird **nie** verschlüsselt.
+2. **Der Fingerabdruck ändert sich.** Nach einem Wechsel ist jede frühere mündliche
+   Bestätigung ungültig. Das UI setzt den Zustand der betroffenen Konversationen auf
+   **„Schlüssel geändert"** zurück und verlangt einen neuen mündlichen Vergleich — genau das,
+   wofür `senderFp` im Umschlag steht.
+3. **Ein Wechsel ist nicht von einem Angriff zu unterscheiden.** Für den Empfänger sieht ein
+   legitimer Wechsel des Gegenübers genauso aus wie ein ausgetauschter Eintrag. Deshalb ist
+   der Wechsel im UI keine stille Aktualisierung, sondern eine Meldung.
 
-Ein Proxy wäre vertretbar, wenn er **auch im Betrieb** existiert (Reverse-Proxy vor dem
-statischen Bundle, gleiche Herkunft für App und API). Dann ist es kein Dev-Trick, sondern eine
-Architekturentscheidung — und gehört als solche in eine eigene ADR.
-
-Solange nichts entschieden ist, baut Anwendung 2 nach dem Befund oben: Schlüssel bei der
-Registrierung, kein Wechsel-Knopf.
+> **Beim Nachprüfen einer CORS-Änderung:** die Antwort setzt `Access-Control-Max-Age: 86400`.
+> Ein Browser, der den alten Preflight zwischengespeichert hat, scheitert bis zu 24 Stunden
+> weiter. In einem frischen Profil prüfen, nicht im offenen Fenster.
 
 ## Begründung
 
@@ -171,6 +179,10 @@ Registrierung, kein Wechsel-Knopf.
   verschwiegen.
 - Ein Konto ohne Schlüssel bleibt erreichbar — man kann ihm schreiben, nur nicht für ihn
   verschlüsseln.
+- **Schlüsselwechsel gehört ins Bedienkonzept**, seit `PUT` freigegeben ist: ausgemusterte
+  Schlüssel bleiben zum Entschlüsseln liegen, der Fingerabdruck muss erneut mündlich
+  verglichen werden, und ein Wechsel des Gegenübers wird gemeldet statt still übernommen —
+  siehe Nachtrag oben.
 
 ## Verworfene Alternativen
 
