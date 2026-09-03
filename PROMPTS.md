@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-03 11:54 (UTC+02:00) - 9 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-03 13:31 (UTC+02:00) - 11 Prompt(s)
 
 ---
 
@@ -103,3 +103,23 @@ Generiert von `tools/collect_prompts.py` am 2026-09-03 11:54 (UTC+02:00) - 9 Pro
 **Prompt:**
 
 > sieh 2 apps vor, eine zweite, die den v2 vervice mit basic auth nutzt
+
+## 10. 2026-09-03 12:36:26 (UTC+02:00)
+
+- **UTC:** 2026-09-03 10:36:26Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> aber der v2 dienst solte doch auch im openapi json sein?
+
+## 11. 2026-09-03 13:26:10 (UTC+02:00)
+
+- **UTC:** 2026-09-03 11:26:10Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> gugg noch mal, es gab eoin redeploy

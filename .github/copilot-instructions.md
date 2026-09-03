@@ -55,8 +55,21 @@ auf die fehlende ADR.
    Groß-/Kleinschreibung, `anna` und `Anna` sind zwei Warteschlangen. **Aber geantwortet
    wird an das rohe `from`**, nie an die kleingeschriebene Form: sonst landet die Antwort
    lautlos in einer anderen Warteschlange (ADR-0014).
-10. **Nichts zur Token- oder OIDC-Stufe** — keine Anmeldung, kein `X-API-Key`, kein
-   Bearer-Header, kein Aufruf unter `/oidc/` oder `/token/` (ADR-0003).
+10. **Nichts zur OIDC-Stufe** — keine Anmeldung, kein Bearer-Header, kein Aufruf unter
+   `/oidc/` (ADR-0003).
+11. **Die beiden Stufen nicht verwechseln.** Offener Pfad (`apps/chat-open`):
+   `GET /open/messages?to=<name>`, **kein** `from` — es bricht mit `400`. v2-Stufe
+   (`apps/chat-v2`): `GET /v2/me/messages`, **kein** `to`, dafür optionales `?from=`;
+   Einliefern über `POST /v2/messages` **ohne** `from` (Absender kommt aus Basic Auth);
+   unbekannter Empfänger ergibt `404`. Vertrag in `docs/api-messagehub-v2.md`.
+12. **`/v2/open-directory` ist kein Bezugsweg für Schlüssel** — dort darf jeder jeden Eintrag
+   überschreiben, das ist der vorgeführte Mann-in-der-Mitte. Beglaubigt ist nur
+   `GET /v2/directory` (ADR-0015).
+13. **Keine hartkodierten Grenzwerte für v2.** Die Zahlen der Spezifikation (64 KB, 20, 500,
+   64 MB, 60/min, 60 min) gelten ausdrücklich für den **offenen Pfad**. Für v2 sind sie nicht
+   genannt: `413`, `429`, `503` behandeln, ohne die Schwelle zu kennen.
+14. **Krypto für `apps/chat-v2` ist noch nicht entschieden** — keine implementieren
+   (ADR-0015).
 
 ## Grenzen des Hubs, die im Code auftauchen müssen
 

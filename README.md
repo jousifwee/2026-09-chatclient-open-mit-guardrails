@@ -21,7 +21,8 @@ Repos ist bewusst reine Dokumentation.
 | Wenn du … | dann lies |
 |---|---|
 | als Agent hier arbeitest | [CLAUDE.md](CLAUDE.md) — die Quelle der Wahrheit |
-| verstehen willst, wie der Hub tickt | [docs/api-messagehub.md](docs/api-messagehub.md) |
+| verstehen willst, wie der offene Pfad tickt | [docs/api-messagehub.md](docs/api-messagehub.md) |
+| die v2-Stufe mit Basic Auth brauchst | [docs/api-messagehub-v2.md](docs/api-messagehub-v2.md) |
 | die Bausteine sehen willst | [docs/architecture.md](docs/architecture.md) |
 | wissen willst, wie sich das anfühlt | [docs/ux-bedienkonzept.md](docs/ux-bedienkonzept.md) |
 | wissen willst, was verboten ist | [docs/guardrails.md](docs/guardrails.md) |

@@ -22,7 +22,7 @@ Aufbau und Regeln: [../conventions.md](../conventions.md).
 | [0012](0012-fehler-und-grenzfaelle.md) | Fehler- und Grenzfallbehandlung | angenommen |
 | [0013](0013-cors-ohne-credentials.md) | Kein `credentials: "include"` | angenommen |
 | [0014](0014-namen-kleinschreiben.md) | Namen kleinschreiben, Kollisionen damit auflösen | angenommen |
-| [0015](0015-zwei-apps-getrennte-transporte.md) | Zwei Anwendungen im Workspace, getrennte Transporte | angenommen, Vertrag von App 2 offen |
+| [0015](0015-zwei-apps-getrennte-transporte.md) | Zwei Anwendungen im Workspace, getrennte Transporte | angenommen; Krypto für App 2 offen |
 
 ## Angekündigte Änderungen am Dienst
 
@@ -31,13 +31,16 @@ sie in der Spezifikation steht, gilt unverändert: **kein `from` senden**
 ([ADR-0010](0010-striktes-anfrage-schema.md)). Vorbereitet ist die Stelle, an der sie
 andockt, nicht der Aufruf ([ADR-0005](0005-konversation-ist-client-konstrukt.md)).
 
-Ein **v2-Dienst mit Basic Auth** ist für die zweite Anwendung angekündigt, am Hub aber am
-2026-09-03 nicht auffindbar. Struktur entschieden, Vertrag offen — die gebrauchten Angaben
-listet [ADR-0015](0015-zwei-apps-getrennte-transporte.md) unter „Was blockiert ist".
+**Eingetreten am 2026-09-03, `0.1.29+039ba26`:** Die **v2-Stufe mit Basic Auth** ist live —
+Selbstregistrierung, Konten, beglaubigtes Schlüsselverzeichnis und ein absichtlich
+ungeschütztes Spielfeld daneben. Vertrag in [../api-messagehub-v2.md](../api-messagehub-v2.md),
+Folgen im Nachtrag von [ADR-0015](0015-zwei-apps-getrennte-transporte.md). Der dort
+angekündigte **Absender-Filter existiert auf v2** (`GET /v2/me/messages?from=`) — auf dem
+offenen Pfad **nicht**, dort bricht er den Aufruf weiterhin.
 
-Bereits eingetreten am 2026-09-03 (`0.1.16` → `0.1.24`): die **Token-Stufe**
-(`/token/...`, `X-API-Key`) ist aus der Spezifikation **entfernt**. Endpunktmenge
-unverändert. Das bestätigt [ADR-0003](0003-nur-offener-pfad.md).
+Zuvor am selben Tag (`0.1.16` → `0.1.24`): die **Token-Stufe** (`/token/...`, `X-API-Key`)
+wurde aus der Spezifikation **entfernt**. Das bestätigt
+[ADR-0003](0003-nur-offener-pfad.md).
 
 Prüfen mit:
 

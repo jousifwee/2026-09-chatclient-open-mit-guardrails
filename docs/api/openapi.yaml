@@ -387,6 +387,422 @@ paths:
       summary: Benutzerverzeichnis abrufen
       tags:
         - oidc
+  /v2/register:
+    post:
+      description: >-
+        Legt ein Konto an. **Der einzige Endpunkt dieser Stufe ohne Nachweis** —
+        wer sich
+
+        registriert, hat noch keinen.
+
+
+        Danach gelten Benutzername und Kennwort fuer jeden weiteren Aufruf als
+        Basic-Auth.
+
+        Der Benutzername ist zugleich die Adresse, an die andere einliefern.
+
+
+        **Waehle ein Wegwerf-Kennwort — keines, das anderswo gilt.** Gespeichert
+        wird nur ein
+
+        scrypt-Hash, nie das Kennwort selbst. Trotzdem: Dieser Dienst laeuft auf
+        einer
+
+        Demo-Box bei einem externen Anbieter und wird jederzeit zurueckgesetzt.
+
+
+        Der Endpunkt ist ratenbegrenzt, und die Gesamtzahl der Konten ist
+        gedeckelt.
+
+
+        HINWEIS: Nur synthetische Testdaten einliefern. Keine personenbezogenen
+        Daten, keine Kundendaten, keine Zugangsdaten, keine Echtdaten aus
+        Produktivsystemen — auch nicht zum Ausprobieren. Dieser Dienst läuft auf
+        einer Demo-Box bei einem externen Anbieter in einer öffentlichen Cloud.
+      operationId: V2OffenController_registrieren
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: Konto angelegt.
+        '400':
+          description: Name oder Kennwort entspricht nicht der Vorgabe.
+        '409':
+          description: Der Benutzername ist bereits belegt.
+        '429':
+          description: Zu viele Registrierungen von diesem Aufrufer.
+        '503':
+          description: Stufe nicht konfiguriert oder Gesamtzahl der Konten erreicht.
+      summary: Konto anlegen
+      tags:
+        - v2
+  /v2/open-directory:
+    get:
+      description: >-
+        **Dieser Endpunkt existiert, um kaputt zu sein — das ist sein Zweck.**
+
+
+        Ein Schluesselverzeichnis ohne Nachweis: Jeder darf hier jeden Eintrag
+        anlegen und
+
+        **ueberschreiben**. Damit laesst sich vorfuehren, was sonst behauptet
+        werden muesste:
+
+        Ein Dritter ersetzt den Eintrag von B durch seinen eigenen Schluessel, A
+
+        verschluesselt fuer den Angreifer, B kann nicht entschluesseln — und
+        beide halten
+
+        den Kanal fuer sicher. Mann-in-der-Mitte, vorfuehrbar statt erzaehlt.
+
+
+        **Nicht als Dienst benutzen.** Kein Eintrag hier ist vertrauenswuerdig,
+        und kein
+
+        Konto haengt daran. Die beglaubigte Fassung steht unter `GET
+        /v2/directory` — dort
+
+        kann nur der Kontoinhaber seinen eigenen Eintrag setzen. Der Unterschied
+        zwischen
+
+        beiden ist der ganze Lerninhalt.
+
+
+        Eigene Ablage: Was hier passiert, kann die beglaubigten Schluessel nicht
+        beschaedigen.
+      operationId: V2OffenController_spielfeld
+      parameters: []
+      responses:
+        '200':
+          description: Die Eintraege des Spielfelds, nach Namen sortiert.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpenKeyEntryDto'
+      summary: Schluessel-Spielfeld ansehen
+      tags:
+        - v2
+  /v2/open-directory/{name}:
+    put:
+      description: >-
+        **Ohne Nachweis, und ohne Pruefung, ob der Name dir gehoert.** Genau das
+        ist der Punkt.
+
+
+        Setze hier den Eintrag eines anderen, und sieh nach, was mit einer
+        Verschluesselung
+
+        passiert, die sich auf dieses Verzeichnis verlaesst. Das echte
+        Gegenmittel ist kein
+
+        Endpunkt, sondern eine Gewohnheit: Fingerabdruecke **muendlich**
+        vergleichen.
+
+
+        Der Name muss dem ueblichen Zeichensatz entsprechen, ein Konto braucht
+        er nicht zu
+
+        sein. Die beglaubigte Fassung ist `PUT /v2/me/key`.
+
+
+        HINWEIS: Nur synthetische Testdaten einliefern. Keine personenbezogenen
+        Daten, keine Kundendaten, keine Zugangsdaten, keine Echtdaten aus
+        Produktivsystemen — auch nicht zum Ausprobieren. Dieser Dienst läuft auf
+        einer Demo-Box bei einem externen Anbieter in einer öffentlichen Cloud.
+      operationId: V2OffenController_spielfeldSetzen
+      parameters:
+        - name: name
+          required: true
+          in: path
+          description: >-
+            Der Name, dessen Eintrag gesetzt wird. **Beliebig** — auch der eines
+            anderen.
+          schema:
+            pattern: ^[A-Za-z0-9_-]{1,32}$
+            minLength: 1
+            maxLength: 32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyDto'
+      responses:
+        '204':
+          description: Gesetzt (oder ueberschrieben).
+        '400':
+          description: Name oder Schluessel entspricht nicht der Vorgabe.
+      summary: Eintrag im Spielfeld setzen — fuer JEDEN Namen
+      tags:
+        - v2
+  /v2/me:
+    get:
+      description: >-
+        Gibt zurueck, als wer der Dienst den Aufrufer erkannt hat.
+
+
+        Der billigste Weg zu pruefen, ob Benutzername und Kennwort stimmen,
+        bevor damit
+
+        etwas eingeliefert wird. Nebenwirkung: Der Aufruf setzt den Zeitpunkt
+        der letzten
+
+        Anmeldung — ein Konto, das benutzt wird, verfaellt nicht.
+      operationId: V2MessagesController_whoami
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2WhoamiDto'
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+        '503':
+          description: Die v2-Stufe ist auf dieser Instanz nicht konfiguriert.
+      security:
+        - v2: []
+      summary: Den eigenen Nachweis pruefen
+      tags:
+        - v2
+  /v2/messages:
+    post:
+      description: >-
+        Legt eine Nutzlast in der Warteschlange eines **vorhandenen Kontos** ab.
+
+
+        Zwei Unterschiede zum offenen Pfad, beide beabsichtigt:
+
+
+        1. **`from` gibt es nicht.** Der Absender wird aus den Zugangsdaten
+        abgeleitet. Ein
+           mitgeschicktes `from` wird abgewiesen (400), nicht ignoriert.
+        2. **Der Empfaenger muss ein Konto sein.** Anders als auf dem offenen
+        Pfad entsteht
+           hier kein Fach durch Einliefern. Unbekannter Name: 404.
+
+        HINWEIS: Nur synthetische Testdaten einliefern. Keine personenbezogenen
+        Daten, keine Kundendaten, keine Zugangsdaten, keine Echtdaten aus
+        Produktivsystemen — auch nicht zum Ausprobieren. Dieser Dienst läuft auf
+        einer Demo-Box bei einem externen Anbieter in einer öffentlichen Cloud.
+      operationId: V2MessagesController_einliefern
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V2SubmitDto'
+      responses:
+        '201':
+          description: Angenommen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2AcceptedDto'
+        '400':
+          description: >-
+            Eingabe entspricht nicht dem Schema — etwa ein mitgeschicktes
+            `from`.
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+        '404':
+          description: Der Empfaenger ist kein Konto dieses Dienstes.
+        '413':
+          description: Nutzlast ueberschreitet die Groessengrenze.
+        '503':
+          description: >-
+            Die Stufe ist nicht konfiguriert, oder es sind keine Konten mehr
+            moeglich.
+      security:
+        - v2: []
+      summary: Nachricht einliefern
+      tags:
+        - v2
+  /v2/me/messages:
+    get:
+      description: >-
+        Listet die Nachrichten des **eigenen** Kontos, aelteste zuerst. Ohne
+        Nebenwirkung
+
+        und beliebig wiederholbar — Entnehmen ist ein eigener Aufruf.
+
+
+        Es gibt keinen `to`-Parameter: Der Empfaenger ist immer der Aufrufer.
+        Fremde
+
+        Faecher sind auf dieser Stufe nicht erreichbar.
+
+
+        Mit `from` laesst sich nach Absender filtern.
+      operationId: V2MessagesController_eigenePost
+      parameters:
+        - name: from
+          required: false
+          in: query
+          description: >-
+            Optional: nur Nachrichten dieses Absenders. Auf dieser Stufe ein
+            Nachweis, keine Behauptung.
+          schema:
+            example: bert
+            type: string
+      responses:
+        '200':
+          description: Die eigenen Nachrichten.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/V2MessageDto'
+        '204':
+          description: Keine Nachrichten (oder keine von diesem Absender).
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+      security:
+        - v2: []
+      summary: Eigene Post ansehen
+      tags:
+        - v2
+  /v2/me/messages/{id}:
+    delete:
+      description: >-
+        Entnimmt genau eine Nachricht aus dem **eigenen** Fach. Jede Nachricht
+        wird genau
+
+        einmal entnommen.
+
+
+        Entnehmen ist `DELETE` und kein `GET`: Der Dienst ist oeffentlich
+        erreichbar, und
+
+        Crawler, Link-Vorschauen oder Client-Wiederholungen wuerden sonst
+        Nachrichten
+
+        verbrauchen, bevor der Empfaenger sie holt.
+
+
+        Eine fremde Kennung ergibt 404, auch wenn sie existiert — fremde Faecher
+        sind nicht
+
+        erreichbar, und die Antwort verraet nicht, ob es die Nachricht gibt.
+      operationId: V2MessagesController_entnehmen
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Entnommen.
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+        '404':
+          description: Nicht (mehr) vorhanden, verfallen oder fremdes Fach.
+      security:
+        - v2: []
+      summary: Nachricht entnehmen
+      tags:
+        - v2
+  /v2/me/key:
+    put:
+      description: >-
+        Setzt oder ersetzt den Schluessel des **eigenen** Kontos. Ueberschreibt,
+        idempotent —
+
+        ein Konto hat genau einen Eintrag.
+
+
+        **Auf dieser Stufe ist der Eintrag beglaubigt:** Nur der Kontoinhaber
+        kann ihn setzen.
+
+        Wie es ohne Nachweis aussieht, laesst sich unter `/v2/open-directory`
+        vorfuehren —
+
+        dort darf jeder jeden Eintrag ueberschreiben.
+
+
+        Der Dienst behandelt den Schluessel als opake Zeichenkette: kein Format,
+        keine
+
+        Pruefung, kein Fingerabdruck. Den Fingerabdruck berechnet der Client,
+        und verglichen
+
+        wird er **muendlich** — das ist der Teil, den Zertifikate spaeter
+        automatisieren.
+
+
+        HINWEIS: Nur synthetische Testdaten einliefern. Keine personenbezogenen
+        Daten, keine Kundendaten, keine Zugangsdaten, keine Echtdaten aus
+        Produktivsystemen — auch nicht zum Ausprobieren. Dieser Dienst läuft auf
+        einer Demo-Box bei einem externen Anbieter in einer öffentlichen Cloud.
+      operationId: V2MessagesController_schluesselSetzen
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyDto'
+      responses:
+        '204':
+          description: Gesetzt.
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+      security:
+        - v2: []
+      summary: Eigenen oeffentlichen Schluessel setzen
+      tags:
+        - v2
+  /v2/directory:
+    get:
+      description: >-
+        Listet die Konten dieses Dienstes mit ihrem hinterlegten Schluessel,
+        sofern vorhanden.
+
+        Der Wert aus `username` ist es, der beim Einliefern in `to` gehoert.
+
+
+        **Braucht einen Nachweis.** Ein offenes Namensregister waere auf einer
+        Stufe mit
+
+        Konten ein Bruch: Es verriete alle Kontonamen, waehrend alles andere
+        geschuetzt ist.
+
+
+        **Die Eintraege hier sind beglaubigt** — jeder Schluessel wurde vom
+        Kontoinhaber
+
+        selbst gesetzt. Genau darin unterscheidet sich dieses Verzeichnis von
+
+        `/v2/open-directory`, und der Unterschied ist der Punkt.
+      operationId: V2MessagesController_verzeichnis
+      parameters: []
+      responses:
+        '200':
+          description: Die Konten, nach Benutzername sortiert.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/V2DirectoryEntryDto'
+        '401':
+          description: Benutzername oder Kennwort stimmt nicht.
+      security:
+        - v2: []
+      summary: Konten und ihre Schluessel
+      tags:
+        - v2
 info:
   title: UTZ MessageHub
   description: >-
@@ -494,17 +910,26 @@ info:
     | offen | `/open/...` | keiner | nichts | flüchtig, im Arbeitsspeicher, mit
     Grenzen und Verfall |
 
-    | OIDC | `/oidc/...` | OIDC-Zugriffstoken | wer der Aufrufer ist, vom
+    | v2 | `/v2/...` | Basic-Auth mit eigenem Konto | wer der Aufrufer ist — auf
+    sein Wort hin registriert | dauerhaft |
+
+    | OIDC | `/oidc/...` | OIDC-Zugriffstoken | wer der Aufrufer ist — vom
     Haus-Anbieter bestätigt | dauerhaft (noch nicht gebaut) |
 
 
-    In Betrieb sind der **offene Pfad** vollständig und von der **OIDC-Stufe**
-    die
+    In Betrieb sind der **offene Pfad** und die **v2-Stufe** vollständig; von
+    der
 
-    Identität (`/oidc/whoami`) und das Benutzerverzeichnis (`/oidc/directory`).
-    Die
+    **OIDC-Stufe** die Identität (`/oidc/whoami`) und das Benutzerverzeichnis
 
-    Nachrichten-Endpunkte der geschützten Stufen gibt es noch nicht.
+    (`/oidc/directory`), ihre Nachrichten-Endpunkte fehlen noch.
+
+
+    Ein Konto `anna` auf der v2-Stufe und ein Realm-Benutzer `anna` auf der
+    OIDC-Stufe
+
+    sind **zwei verschiedene Personen** mit zwei Postfächern, die einander nicht
+    sehen.
 
 
     ### Der Absender je Stufe
@@ -513,20 +938,25 @@ info:
     Auf dem offenen Pfad ist `from` eine **unbeglaubigte Behauptung** — jeder
     kann jeden
 
-    Absender angeben. Auf der OIDC-Stufe wird der Absender **aus dem Nachweis
-    abgeleitet**
+    Absender angeben. Auf **v2** und auf der **OIDC-Stufe** wird der Absender
+    **aus dem
 
-    und ist dort kein Feld des Anfragekörpers mehr; ein mitgeschicktes `from`
-    wird
+    Nachweis abgeleitet** und ist dort kein Feld des Anfragekörpers mehr; ein
 
-    abgewiesen.
-  version: 0.1.24+ee364d0
+    mitgeschicktes `from` wird abgewiesen, nicht ignoriert.
+  version: 0.1.29+039ba26
   contact: {}
 tags: []
 servers:
   - url: https://utz-messagehub.itzcloud.de
 components:
   securitySchemes:
+    v2:
+      type: http
+      scheme: basic
+      description: >-
+        Benutzername und Kennwort eines selbst registrierten v2-Kontos (POST
+        /v2/register). Der Absender jeder Nachricht wird daraus abgeleitet.
     oidc:
       scheme: bearer
       bearerFormat: JWT
@@ -720,3 +1150,187 @@ components:
       required:
         - username
         - displayName
+    RegisterDto:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: >-
+            Gewuenschter Benutzername. Er ist zugleich die Adresse, an die
+            andere einliefern — derselbe Zeichensatz wie auf dem offenen Pfad.
+            Ist er belegt, antwortet der Dienst mit 409.
+          example: anna
+          pattern: ^[A-Za-z0-9_-]{1,32}$
+        password:
+          type: string
+          minLength: 8
+          description: >-
+            Kennwort fuer alle weiteren Aufrufe (Basic-Auth). Mindestens 8
+            Zeichen, keine weitere Regel.
+
+
+            **Waehle ein Wegwerf-Kennwort. Verwende keines, das anderswo gilt.**
+            Dieser Dienst laeuft auf einer Demo-Box bei einem externen Anbieter;
+            er wird jederzeit zurueckgesetzt. Gespeichert wird nur ein
+            scrypt-Hash, nie das Kennwort selbst — aber ein hier eingetipptes
+            Kennwort ist trotzdem eines, das du anderswo nicht mehr benutzen
+            solltest.
+          example: kurs-wegwerf-01
+        key:
+          type: string
+          minLength: 1
+          description: >-
+            Optional: oeffentlicher Schluessel, gleich bei der Registrierung
+            hinterlegt. Fuer den Dienst eine opake Zeichenkette — kein Format
+            wird geprueft. Nachtragen oder ersetzen geht jederzeit ueber PUT
+            /v2/me/key.
+          example: '{"kty":"EC","crv":"P-256","x":"...","y":"..."}'
+      required:
+        - username
+        - password
+    OpenKeyEntryDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: >-
+            Der Name des Eintrags. **Kein Konto** — hier darf jeder jeden Namen
+            belegen.
+          example: anna
+        material:
+          type: string
+          description: Der abgelegte Schluessel, opak.
+        updatedAt:
+          type: string
+          description: >-
+            Wann der Eintrag zuletzt ueberschrieben wurde — von wem, weiss der
+            Dienst nicht.
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - name
+        - material
+        - updatedAt
+        - expiresAt
+    KeyDto:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+          description: >-
+            Der oeffentliche Schluessel als opake Zeichenkette. Der Dienst
+            prueft **kein** Format und berechnet **keinen** Fingerabdruck — das
+            tut der Client. Welches Format im Kurs gilt (JWK), steht im
+            Leitplanken-Set, nicht in diesem Dienst.
+          example: '{"kty":"EC","crv":"P-256","x":"...","y":"..."}'
+      required:
+        - key
+    V2WhoamiDto:
+      type: object
+      properties:
+        username:
+          type: string
+          description: >-
+            Der Benutzername aus den Zugangsdaten. Auf dieser Stufe zugleich der
+            Absender jeder eingelieferten Nachricht — er kann im Anfragekoerper
+            nicht gesetzt werden.
+          example: anna
+      required:
+        - username
+    V2SubmitDto:
+      type: object
+      properties:
+        to:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: >-
+            Benutzername des Empfaengers. **Muss ein vorhandenes Konto sein** —
+            anders als auf dem offenen Pfad entsteht hier kein Fach durch
+            Einliefern. Unbekannter Name: 404. Vorhandene Konten stehen unter
+            GET /v2/directory.
+          example: bert
+          pattern: ^[A-Za-z0-9_-]{1,32}$
+        message:
+          type: string
+          minLength: 1
+          description: >-
+            Die Nutzlast. Fuer den Dienst eine opake Zeichenkette: weder
+            interpretiert noch auf eine Struktur geprueft. Groessengrenze siehe
+            Beschreibung der Operation.
+          example: U2FsdGVkX1+aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789==
+      required:
+        - to
+        - message
+    V2AcceptedDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Kennung der Nachricht. Wird zum Entnehmen gebraucht.
+          format: uuid
+        expiresAt:
+          type: string
+          description: Zeitpunkt, ab dem die Nachricht verfallen ist.
+          format: date-time
+      required:
+        - id
+        - expiresAt
+    V2MessageDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        to:
+          type: string
+          description: >-
+            Der Empfaenger — immer das eigene Konto, sonst waere die Nachricht
+            nicht abrufbar.
+          example: anna
+        from:
+          type: string
+          description: >-
+            Der Absender. **Auf dieser Stufe ein Nachweis, keine Behauptung:**
+            Er wurde beim Einliefern aus den Zugangsdaten abgeleitet und konnte
+            nicht gesetzt werden.
+          example: bert
+        message:
+          type: string
+          description: Die opake Nutzlast, unveraendert.
+        receivedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - to
+        - from
+        - message
+        - receivedAt
+        - expiresAt
+    V2DirectoryEntryDto:
+      type: object
+      properties:
+        username:
+          type: string
+          description: >-
+            Benutzername eines vorhandenen Kontos. Genau dieser Wert gehoert in
+            `to`.
+          example: anna
+        key:
+          type: string
+          description: >-
+            Der hinterlegte oeffentliche Schluessel, falls vorhanden und nicht
+            verfallen. **Auf dieser Stufe beglaubigt:** Nur der Kontoinhaber
+            selbst kann ihn setzen. Fehlt er, ist das Konto trotzdem erreichbar
+            — man kann ihm schreiben, nur nicht fuer ihn verschluesseln.
+      required:
+        - username

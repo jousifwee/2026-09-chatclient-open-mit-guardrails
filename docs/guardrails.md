@@ -50,7 +50,10 @@ Fallen, die einen fertig aussehenden Aufruf scheitern lassen. Vollständige Begr
 | Behaupteten Absender als Identität behandeln | jeder kann jeden Namen angeben | [ADR-0005](adr/0005-konversation-ist-client-konstrukt.md) |
 | An die kleingeschriebene Form antworten statt an das rohe `from` | lautlos unzustellbar | [ADR-0014](adr/0014-namen-kleinschreiben.md) |
 | Etwas zur OIDC-Stufe einbauen | in diesem Release ignoriert | [ADR-0003](adr/0003-nur-offener-pfad.md) |
-| Einen Transport für `apps/chat-v2` schreiben | Vertrag unbekannt, wäre geraten | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
+| Auf v2 ein `from` im Rumpf senden | Absender kommt aus dem Nachweis, `400` | [api-messagehub-v2.md](api-messagehub-v2.md) |
+| Schlüssel aus `/v2/open-directory` beziehen | dort überschreibt jeder jeden Eintrag | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
+| Grenzwerte des offenen Pfades auf v2 anwenden | für v2 nicht genannt | [api-messagehub-v2.md](api-messagehub-v2.md) |
+| Krypto in `apps/chat-v2` implementieren | noch nicht entschieden | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Nachweise in `libs/domain` einführen | Schichtbruch, Nachweis ist Transportsache | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Zugangsdaten vorbelegen oder speichern | Geheimnis an Ruhe | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Den angekündigten Absender-Filter vorab senden | existiert nicht, `400` | [ADR-0010](adr/0010-striktes-anfrage-schema.md) |

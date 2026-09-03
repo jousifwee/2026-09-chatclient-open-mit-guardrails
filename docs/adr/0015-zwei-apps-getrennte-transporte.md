@@ -1,7 +1,7 @@
 # ADR-0015: Zwei Anwendungen in einem Workspace, getrennte Transporte
 
-**Status:** angenommen (2026-09-03) — **Teil offen:** der API-Vertrag der zweiten Anwendung
-ist noch nicht bekannt, siehe „Was blockiert ist"
+**Status:** angenommen (2026-09-03) — **Vertrag inzwischen bekannt**, siehe „Nachtrag:
+v2 ist live". Offen bleibt allein die Krypto-Entscheidung für Anwendung 2.
 
 ## Kontext
 
@@ -9,7 +9,10 @@ Bisher war eine Anwendung vorgesehen, gegen den offenen Pfad des UTZ MessageHub
 ([ADR-0003](0003-nur-offener-pfad.md)). Vorgesehen sind nun **zwei**: die zweite soll einen
 **v2-Dienst mit Basic Auth** anbinden.
 
-**Verifiziert am 2026-09-03 am laufenden Hub — dieser v2-Dienst ist dort nicht zu finden:**
+**Verifiziert am 2026-09-03, kurz vor 11:25 Uhr, am laufenden Hub (`0.1.24+ee364d0`) — der v2-Dienst
+war dort nicht zu finden.** Er kam wenige Minuten später mit einem Redeploy; siehe
+„Nachtrag: v2 ist live" am Ende. Die Bestandsaufnahme bleibt stehen, weil sie die
+Strukturentscheidung begründet:
 
 - `GET /health` meldet `0.1.24+ee364d0` (am Vortag `0.1.16+6afc10e`), also ein neuer Build.
 - Die Endpunktmenge ist **identisch** zum Vortag: `/health`, `/open/messages` (POST, GET),
@@ -34,7 +37,7 @@ veröffentlicht. Entscheidbar ist damit heute die **Struktur**, nicht der Vertra
 ```
 apps/
   chat-open/        Anwendung 1 — offener Pfad des MessageHub (ADR-0003)
-  chat-v2/          Anwendung 2 — v2-Dienst mit Basic Auth (Vertrag offen)
+  chat-v2/          Anwendung 2 — v2-Stufe des Hubs mit Basic Auth
 libs/
   domain/           Konversationen, Nachrichtenzustände, Gruppierung, Namensregeln
   payload/          Umschlag und Krypto (ADR-0007)
@@ -103,28 +106,69 @@ Diese Punkte hängen nicht am Vertrag, sondern an Basic Auth und am Browser:
   Anwendung 2 lauffähig und wird nicht durch deren offenen Vertrag blockiert.
 - `libs/domain` darf **nichts** über Nachweise wissen. Wer dort ein Feld für Zugangsdaten
   einführt, verletzt diese ADR.
-- Ob Anwendung 2 ein eigenes Bedienkonzept braucht, ist offen und hängt daran, ob der Absender
-  aus dem Nachweis folgt.
+- Anwendung 2 braucht ein **eigenes Bedienkonzept**: dort folgt der Absender aus dem
+  Nachweis, also entfällt die Anzeige „behauptet" — und es kommen Registrierung, Anmeldung
+  und Schlüsselverzeichnis hinzu. Noch nicht geschrieben.
 - Anwendung 1 bleibt auf dem Stand von ADR-0003: nichts zur OIDC-Stufe.
 
-## Was blockiert ist
+## Nachtrag: v2 ist live (2026-09-03, `0.1.29+039ba26`)
 
-Der Vertrag von Anwendung 2 lässt sich nicht schreiben, und nach
-[ADR-0001](0001-doku-zuerst.md) wird er auch nicht geraten. Gebraucht werden:
+Der Dienst wurde um 11:25 Uhr neu ausgerollt und bringt die **v2-Stufe mit Basic Auth**
+vollständig mit. Der Vertrag steht in [api-messagehub-v2.md](../api-messagehub-v2.md); hier
+nur, was die offenen Punkte dieser ADR beantwortet:
 
-1. **Basis-Adresse** des v2-Dienstes.
-2. **Spezifikation** — OpenAPI-Adresse oder die Endpunkte samt Feldern.
-3. **Ob der Absender aus dem Nachweis folgt** oder weiterhin ein Feld des Anfragekörpers ist.
-   Das ist die Frage mit den größten Folgen fürs Bedienkonzept.
-4. **Woher die Zugangsdaten kommen** — je Teilnehmer oder ein gemeinsames Kurs-Konto.
-5. **Ob der Dienst `WWW-Authenticate: Basic` sendet** (nativer Browserdialog, siehe oben) und
-   ob sein CORS `Authorization` in `Access-Control-Allow-Headers` erlaubt.
-6. **Ob es Historie gibt.** Ein Dienst mit dauerhafter Ablage würde
-   [ADR-0011](0011-lokale-persistenz-indexeddb.md) für Anwendung 2 ablösen — dann wäre
-   IndexedDB dort nicht mehr die einzige Historie.
+| Frage von oben | Antwort |
+|---|---|
+| Basis-Adresse | derselbe Host, Pfadpräfix `/v2/...` |
+| Spezifikation | `/openapi.json`, Schnappschuss im Repo |
+| Folgt der Absender aus dem Nachweis? | **Ja.** `from` gibt es nicht; ein mitgeschicktes `from` wird mit `400` abgewiesen |
+| Woher die Zugangsdaten? | **Selbstregistrierung** über `POST /v2/register`, je Teilnehmer ein Konto |
+| `WWW-Authenticate` / CORS-Header | **noch nicht verifiziert**, beim ersten Aufruf zu prüfen |
+| Gibt es Historie? | Die Ablage ist **dauerhaft**, Nachrichten verfallen aber weiterhin (`expiresAt`) |
 
-Bis diese Punkte geklärt sind, existiert `apps/chat-v2/` als Ziel im Workspace, aber ohne
-Transport und ohne Bedienkonzept.
+**Damit ist diese ADR nicht überholt, sondern bestätigt.** Der Absender folgt auf v2 aus dem
+Nachweis und ist auf dem offenen Pfad eine freie Behauptung — genau der Wesensunterschied,
+der gegen einen Laufzeitschalter sprach. Dazu kommen drei weitere Unterschiede, die kein
+Schalter überbrückt: der Empfänger muss ein Konto sein (`404` statt neues Fach), fremde
+Fächer sind unerreichbar (kein `to`-Parameter), und es **gibt** einen Absender-Filter
+(`?from=`), der auf dem offenen Pfad den Aufruf bricht.
+
+### Was jetzt zusätzlich festgelegt ist
+
+- **`apps/chat-v2/` bekommt seinen Transport gegen `/v2/...`.** Nicht mehr blockiert.
+- **`libs/domain` bleibt nachweisfrei.** Dass der Absender auf v2 beglaubigt ist, ist eine
+  Eigenschaft, die der Transport **als Feld mitliefert** — nicht eine Verzweigung in der
+  Fachlogik. Die Anzeige „behauptet" gegen „nachgewiesen" ist ein Wert, keine Bedingung auf
+  die Stufe.
+- **Der Absender-Filter `?from=` gehört zu Anwendung 2 und nur dorthin.**
+  [ADR-0010](0010-striktes-anfrage-schema.md) gilt für Anwendung 1 unverändert weiter: dort
+  bricht dieser Parameter den Aufruf.
+- **`/v2/open-directory` ist kein Bezugsweg für Schlüssel.** Die beiden Endpunkte sind
+  erklärtermaßen dazu da, kaputt zu sein (jeder darf jeden Eintrag überschreiben). Wer von
+  dort einen Schlüssel holt und damit verschlüsselt, führt den Mann-in-der-Mitte-Angriff aus,
+  statt eine Anbindung zu bauen. Beglaubigt ist nur `GET /v2/directory`.
+- **Kein hartkodierter Grenzwert für v2.** Die numerischen Grenzen der Spezifikation gelten
+  ausdrücklich für den offenen Pfad; für v2 sind Nutzlastgrenze, Kontendeckel, Ratenlimit und
+  Verfallsdauer **nicht genannt**, und `/health` hat keinen v2-Block. Der Client behandelt
+  `413`, `429` und `503` ohne die Schwelle zu kennen und wertet `expiresAt` aus der Antwort
+  aus.
+- **Wegwerf-Kennwort.** Die Registrierung verlangt mindestens 8 Zeichen und sonst nichts; die
+  Spezifikation bittet ausdrücklich um ein Kennwort, das nirgends sonst gilt. Der Client sagt
+  das bei der Registrierung, statt es vorauszusetzen.
+
+### Was noch offen ist
+
+**Die Krypto-Entscheidung für Anwendung 2.** Die v2-Stufe hat ein beglaubigtes
+Schlüsselverzeichnis (`PUT /v2/me/key`, `GET /v2/directory`) und die Spezifikation nennt
+**JWK** als das im Kurs geltende Format — mit dem ausdrücklichen Hinweis, dass das Format
+„im Leitplanken-Set" festgelegt wird, also hier. Damit wird asymmetrische Verschlüsselung
+erstmals möglich, die [ADR-0007](0007-krypto-umschaltbar.md) für Anwendung 1 als eigenes
+Projekt verworfen hatte — dort gab es keinen Vertrauensanker, hier gibt es einen.
+
+Zu entscheiden ist, ob Anwendung 2 asymmetrisch verschlüsselt (und dann mit welchem
+JWK-Format und welchem Fingerabdruckverfahren für den **mündlichen** Vergleich) oder die
+Passphrasen-Variante aus ADR-0007 behält. Bis dahin wird für Anwendung 2 **keine** Krypto
+implementiert.
 
 ## Verworfene Alternativen
 

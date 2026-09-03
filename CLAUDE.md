@@ -58,7 +58,8 @@ Daraus folgt die zentrale Arbeitsregel dieses Repos:
 | [AGENTS.md](AGENTS.md) | Tool-agnostischer Zeiger auf diese Datei |
 | [.github/copilot-instructions.md](.github/copilot-instructions.md) | Zeiger für GitHub Copilot |
 | [docs/architecture.md](docs/architecture.md) | Bausteine, Schichten, Datenfluss, Zustand |
-| [docs/api-messagehub.md](docs/api-messagehub.md) | Der API-Vertrag und die Regeln seiner Nutzung |
+| [docs/api-messagehub.md](docs/api-messagehub.md) | Vertrag des **offenen Pfades** und die Regeln seiner Nutzung |
+| [docs/api-messagehub-v2.md](docs/api-messagehub-v2.md) | Vertrag der **v2-Stufe**: Basic Auth, Konten, Schlüsselverzeichnis |
 | [docs/api/openapi.yaml](docs/api/openapi.yaml) | Eingefrorener Schnappschuss der Spezifikation |
 | [docs/ux-bedienkonzept.md](docs/ux-bedienkonzept.md) | Bedienkonzept, Zustände, Sichtbarkeit |
 | [docs/guardrails.md](docs/guardrails.md) | Was verboten ist und warum |
@@ -74,10 +75,12 @@ Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
 
 - **`apps/chat-open/`** — offener Pfad des MessageHub, ohne Nachweis. Vollständig
   spezifiziert, siehe [docs/](docs/).
-- **`apps/chat-v2/`** — v2-Dienst mit Basic Auth. **Vertrag offen**: der Dienst ist am Hub am
-  2026-09-03 nicht auffindbar (kein `v2`, kein Basic Auth in Spezifikation und Bundle).
-  **Keinen Transport dafür schreiben** — was gebraucht wird, listet ADR-0015 unter „Was
-  blockiert ist".
+- **`apps/chat-v2/`** — v2-Stufe des Hubs mit **Basic Auth**, seit `0.1.29+039ba26`
+  (2026-09-03) in Betrieb. Vertrag in
+  [docs/api-messagehub-v2.md](docs/api-messagehub-v2.md). Dort ist der Absender **aus dem
+  Nachweis abgeleitet**, der Empfänger muss ein Konto sein, fremde Fächer sind unerreichbar,
+  und `?from=` filtert nach Absender. **Krypto für diese Anwendung ist noch nicht
+  entschieden** — bis dahin keine implementieren (ADR-0015).
 - Geteilt werden `libs/domain`, `libs/payload`, `libs/store`, `libs/ui`. **`libs/domain` darf
   nichts über Nachweise wissen.**
 

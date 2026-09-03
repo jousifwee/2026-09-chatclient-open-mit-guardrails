@@ -17,11 +17,16 @@ vorgeschlagen.
 
 Vier Fallen, die einen fertig aussehenden Aufruf scheitern lassen — Details in CLAUDE.md:
 
-- `GET /open/messages` kennt **nur** `to`. Ein Absender-Filter ist angekündigt, existiert
-  aber **noch nicht** — und wird bis dahin nicht gesendet.
+- **Zwei Stufen, zwei Anwendungen.** Auf dem **offenen Pfad** kennt `GET /open/messages`
+  **nur** `to`, und ein `from` bricht den Aufruf mit `400`. Auf der **v2-Stufe** heißt der
+  Abruf `GET /v2/me/messages`, hat **keinen** `to`-Parameter und **akzeptiert** `?from=`.
+  Die beiden nicht verwechseln.
 - Undeklarierte Felder oder Query-Parameter ergeben `400 "property <x> should not exist"`.
 - `credentials: "include"` bricht CORS gegen `Access-Control-Allow-Origin: *`.
 - `to`/`from` **niemals** mit echten Namen belegen — `GET /open/names` ist öffentlich.
 - Namen kleinschreiben; geantwortet wird aber an das **rohe** `from`, sonst landet die
   Antwort lautlos in einer anderen Warteschlange.
-- Token- und OIDC-Stufe sind in diesem Release **ignoriert** — nichts davon einbauen.
+- Die **OIDC-Stufe** ist ignoriert — nichts davon einbauen.
+- Auf v2 gibt es **kein `from`** im Rumpf; der Absender folgt aus den Zugangsdaten.
+- `/v2/open-directory` ist **erklärtermaßen kaputt** (jeder überschreibt jeden Eintrag) —
+  **kein Bezugsweg für Schlüssel**. Beglaubigt ist nur `GET /v2/directory`.
