@@ -49,7 +49,10 @@ Fallen, die einen fertig aussehenden Aufruf scheitern lassen. Vollständige Begr
 | Ausnahme bei unlesbarer Nutzlast | ein Fremder macht den Client unbenutzbar | [ADR-0007](adr/0007-krypto-umschaltbar.md) |
 | Behaupteten Absender als Identität behandeln | jeder kann jeden Namen angeben | [ADR-0005](adr/0005-konversation-ist-client-konstrukt.md) |
 | An die kleingeschriebene Form antworten statt an das rohe `from` | lautlos unzustellbar | [ADR-0014](adr/0014-namen-kleinschreiben.md) |
-| Etwas zur Token- oder OIDC-Stufe einbauen | in diesem Release ignoriert | [ADR-0003](adr/0003-nur-offener-pfad.md) |
+| Etwas zur OIDC-Stufe einbauen | in diesem Release ignoriert | [ADR-0003](adr/0003-nur-offener-pfad.md) |
+| Einen Transport für `apps/chat-v2` schreiben | Vertrag unbekannt, wäre geraten | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
+| Nachweise in `libs/domain` einführen | Schichtbruch, Nachweis ist Transportsache | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
+| Zugangsdaten vorbelegen oder speichern | Geheimnis an Ruhe | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Den angekündigten Absender-Filter vorab senden | existiert nicht, `400` | [ADR-0010](adr/0010-striktes-anfrage-schema.md) |
 | `-k` bei `curl` gegen den Hub | umgeht Zertifikatsprüfung; interne CA ist auch Interception-Wurzel | [api-messagehub.md](api-messagehub.md) |
 
@@ -81,6 +84,10 @@ eine ADR.
 - **Passphrasen nur im Arbeitsspeicher.** Nicht in IndexedDB, nicht in `localStorage`, nicht
   in `sessionStorage`, nicht in der URL. Nach dem Neuladen wird erneut gefragt
   ([ADR-0007](adr/0007-krypto-umschaltbar.md)).
+- **Zugangsdaten für Basic Auth genauso** — nur im Arbeitsspeicher, nie vorbelegt, nie im
+  Repo, nie in einer versionierten `.env`. Basic Auth sendet das Kennwort bei *jeder*
+  Anfrage, HTTPS ist damit Pflicht
+  ([ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md)).
 - **Keine abgeleiteten Schlüssel persistieren.** Ein gespeicherter Schlüssel ist ein
   gespeichertes Geheimnis.
 - **Die interne ITZ-CA nicht global trusten.** Sie ist gemeinsame Wurzel der internen

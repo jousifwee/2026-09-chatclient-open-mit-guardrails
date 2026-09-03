@@ -4,6 +4,27 @@ Ableitung aus den Eigenschaften des Hubs ([api-messagehub.md](api-messagehub.md)
 Entscheidungen unter [adr/](adr/). Diese Datei beschreibt **Sollzustand**, nicht
 Implementierungsstand — Code existiert noch nicht.
 
+## Zwei Anwendungen
+
+Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
+([ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md)):
+
+```
+apps/chat-open/   Anwendung 1 — offener Pfad des MessageHub, ohne Nachweis
+apps/chat-v2/     Anwendung 2 — v2-Dienst mit Basic Auth (Vertrag noch offen)
+libs/domain/      Konversationen, Zustände, Gruppierung, Namensregeln
+libs/payload/     Umschlag und Krypto
+libs/store/       IndexedDB-Historie
+libs/ui/          gemeinsame Material-3-Bausteine
+```
+
+Geteilt wird alles, was **vom Nachweis unabhängig** ist. Der Transport wird **nicht** geteilt:
+kein gemeinsames Interface, keine Strategie-Klasse, kein Laufzeitschalter. `libs/domain` darf
+nichts über Nachweise wissen.
+
+**Der Rest dieser Datei beschreibt Anwendung 1.** Für Anwendung 2 fehlt der API-Vertrag; was
+dafür gebraucht wird, listet ADR-0015.
+
 ## Systemkontext
 
 ```
@@ -49,12 +70,14 @@ Dünn und dumm. Ein Verfahren je Endpunkt, keine Fachlogik. Aufgaben:
 - **Keine undeklarierten Felder oder Parameter**
   ([ADR-0010](adr/0010-striktes-anfrage-schema.md)).
 
-Die Schicht spricht den **offenen Pfad direkt** an. **Keine Stufen-Abstraktion:** Token- und
-OIDC-Stufe sind in diesem Release ausdrücklich ignoriert, und eine Schnittstelle für
-unbekanntes Verhalten wäre eine Vermutung, kein Entwurf
-([ADR-0003](adr/0003-nur-offener-pfad.md)).
+Die Schicht spricht den **offenen Pfad direkt** an. **Keine Stufen-Abstraktion:** die
+OIDC-Stufe ist in diesem Release ausdrücklich ignoriert, die frühere Token-Stufe wurde am
+2026-09-03 aus der Spezifikation entfernt, und eine Schnittstelle für unbekanntes Verhalten
+wäre eine Vermutung, kein Entwurf ([ADR-0003](adr/0003-nur-offener-pfad.md)). Der Transport
+von Anwendung 2 ist ein **eigener**, keine zweite Implementierung dieses hier
+([ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md)).
 
-**Ein Naht ist trotzdem vorgesehen** — aber nur die, deren Form bekannt ist: Der Abruf des
+**Eine Naht ist trotzdem vorgesehen** — aber nur die, deren Form bekannt ist: Der Abruf des
 Eingangs liegt hinter **genau einer Funktion**. Kommt die vom Betreiber angekündigte
 serverseitige **Absender-Filterung**, ändert sich diese eine Stelle und sonst nichts. Bis der
 Parameter in der Spezifikation steht, wird er **nicht gesendet** — auch nicht hinter einem

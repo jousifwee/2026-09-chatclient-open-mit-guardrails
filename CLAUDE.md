@@ -67,6 +67,20 @@ Daraus folgt die zentrale Arbeitsregel dieses Repos:
 | [memory/](memory/) | Projektgedächtnis, versioniert und für alle Agenten lesbar |
 | [PROMPTS.md](PROMPTS.md) | Prompt-Protokoll, generiert von `tools/collect_prompts.py` |
 
+## Zwei Anwendungen
+
+Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
+([ADR-0015](docs/adr/0015-zwei-apps-getrennte-transporte.md)):
+
+- **`apps/chat-open/`** — offener Pfad des MessageHub, ohne Nachweis. Vollständig
+  spezifiziert, siehe [docs/](docs/).
+- **`apps/chat-v2/`** — v2-Dienst mit Basic Auth. **Vertrag offen**: der Dienst ist am Hub am
+  2026-09-03 nicht auffindbar (kein `v2`, kein Basic Auth in Spezifikation und Bundle).
+  **Keinen Transport dafür schreiben** — was gebraucht wird, listet ADR-0015 unter „Was
+  blockiert ist".
+- Geteilt werden `libs/domain`, `libs/payload`, `libs/store`, `libs/ui`. **`libs/domain` darf
+  nichts über Nachweise wissen.**
+
 ## Festgelegter Stack
 
 Verbindlich, Begründungen in den verlinkten ADRs:
@@ -126,7 +140,8 @@ trusten (sie ist auch Wurzel eines TLS-Interception-Proxys).
 - **Keine Zugangsdaten, keine Schlüssel, keine Echtdaten.** Siehe
   [docs/guardrails.md](docs/guardrails.md).
 - **Nichts zur Token- oder OIDC-Stufe.** In diesem Release ausdrücklich ignoriert: keine
-  Anmeldung, kein `X-API-Key`, kein Bearer-Header, kein Aufruf unter `/oidc/` oder
-  `/token/`, keine Abstraktion und kein UI-Element, das eine Stufe ankündigt. Die
-  Nachrichten-Endpunkte dieser Stufen existieren am Hub nicht; `/oidc/config` liefert
-  `configured: false` ([ADR-0003](docs/adr/0003-nur-offener-pfad.md)).
+  Anmeldung, kein Bearer-Header, kein Aufruf unter `/oidc/`, keine Abstraktion und kein
+  UI-Element, das eine Stufe ankündigt. Die Nachrichten-Endpunkte der OIDC-Stufe existieren
+  am Hub nicht; `/oidc/config` liefert `configured: false`. Die frühere Token-Stufe ist am
+  2026-09-03 **aus der Spezifikation entfernt** worden
+  ([ADR-0003](docs/adr/0003-nur-offener-pfad.md)).

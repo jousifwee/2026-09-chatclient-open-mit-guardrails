@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-02 17:44 (UTC+02:00) - 7 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-03 11:54 (UTC+02:00) - 9 Prompt(s)
 
 ---
 
@@ -83,3 +83,23 @@ Generiert von `tools/collect_prompts.py` am 2026-09-02 17:44 (UTC+02:00) - 7 Pro
 **Prompt:**
 
 > 1 b, 2 c, 3 c, 4 c , geh nochmal in die doku der api beim abholen, erwähne ob die resource auch anne nachrichten an einen nutzer unabhängig vom absender holen kann und ob dazu festlegungen für die apinutzung getroffen werden sollten
+
+## 8. 2026-09-03 11:47:14 (UTC+02:00)
+
+- **UTC:** 2026-09-03 09:47:14Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> browser-app technologie - steht fest?
+
+## 9. 2026-09-03 11:49:50 (UTC+02:00)
+
+- **UTC:** 2026-09-03 09:49:50Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> sieh 2 apps vor, eine zweite, die den v2 vervice mit basic auth nutzt

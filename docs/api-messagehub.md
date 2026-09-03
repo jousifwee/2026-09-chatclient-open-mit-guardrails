@@ -2,7 +2,7 @@
 
 Basis: `https://utz-messagehub.itzcloud.de` · Spezifikation `/openapi.json` und
 `/openapi.yaml` · eingefrorener Schnappschuss in [`api/openapi.yaml`](api/openapi.yaml)
-(Fassung `0.1.16+6afc10e`, geholt am 2026-09-02).
+(Fassung `0.1.24+ee364d0`, geholt am 2026-09-03).
 
 Dieses Dokument beschreibt **nur, was verifiziert ist**: aus der Spezifikation gelesen oder
 am laufenden Dienst mit synthetischen Testdaten geprüft. Wo Verhalten geprüft wurde, steht
@@ -15,15 +15,22 @@ demselben Namen wieder abholen. Store-and-forward, mehr nicht — **kein Chat, k
 keine Zustellbestätigung**. Die Nutzlast ist für den Dienst **opak**: er interpretiert sie
 nicht und erwartet keine Struktur.
 
-Der Dienst wird in drei Schutzstufen mit **getrennten Endpunkten und getrennten Ablagen**
+Der Dienst wird in Schutzstufen mit **getrennten Endpunkten und getrennten Ablagen**
 angeboten. Es gibt keinen Übergang: was unter einer Stufe eingeliefert wurde, ist über die
 anderen nicht erreichbar.
 
 | Stufe | Pfad | Nachweis | Ablage | Zustand |
 |---|---|---|---|---|
 | offen | `/open/...` | keiner | flüchtig, im Arbeitsspeicher, mit Verfall | **vollständig in Betrieb** |
-| Token | `/token/...` | API-Token `X-API-Key` | dauerhaft | **nicht gebaut** |
 | OIDC | `/oidc/...` | Bearer-JWT | dauerhaft | nur `whoami` + `directory`; Nachrichten-Endpunkte **nicht gebaut** |
+
+> **Änderung am 2026-09-03 (`0.1.16` → `0.1.24`):** Die frühere **Token-Stufe**
+> (`/token/...` mit `X-API-Key`) ist aus der Spezifikation **entfernt** — samt ihres
+> Security-Schemas `kurs-token`. Die Endpunkte hatte es nie gegeben. Neu ist ein Hinweis an
+> Coding-Agenten und eine Seite `/anbindung` mit Mustern für Client-Anbindung und
+> Tokenerneuerung; `/anbindung` ist eine Route der Angular-Oberfläche des Hubs, kein
+> API-Endpunkt. **Kein neuer Nachrichten-Endpunkt, kein `v2`, kein Basic Auth** — geprüft
+> gegen Spezifikation und ausgeliefertes JavaScript-Bundle.
 
 `GET /oidc/config` liefert auf dieser Instanz **`configured: false`** (geprüft 2026-09-02) —
 die OIDC-Stufe ist nicht einmal eingerichtet. Dieses Projekt nutzt daher ausschließlich den

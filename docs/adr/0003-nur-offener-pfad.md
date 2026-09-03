@@ -4,9 +4,8 @@
 
 ## Kontext
 
-Der UTZ MessageHub bietet drei Schutzstufen mit getrennten Endpunkten und **getrennten
-Ablagen** an: `offen` ohne Nachweis, `Token` mit `X-API-Key`, `OIDC` mit Bearer-JWT. Zwischen
-den Stufen gibt es keinen Übergang.
+Der UTZ MessageHub bietet Schutzstufen mit getrennten Endpunkten und **getrennten Ablagen**
+an. Zwischen den Stufen gibt es keinen Übergang.
 
 Geprüft am 2026-09-02 gegen den laufenden Dienst:
 
@@ -14,7 +13,13 @@ Geprüft am 2026-09-02 gegen den laufenden Dienst:
 - Von der **OIDC-Stufe** existieren nur `/oidc/whoami` und `/oidc/directory`; die
   Nachrichten-Endpunkte sind laut Spezifikation **nicht gebaut**. `GET /oidc/config` liefert
   auf dieser Instanz `configured: false` — die Stufe ist nicht einmal eingerichtet.
-- Die **Token-Stufe** ist laut Spezifikation ebenfalls nicht gebaut.
+- Eine **Token-Stufe** (`/token/...` mit `X-API-Key`) war angekündigt und ebenfalls nicht
+  gebaut.
+
+Nachtrag 2026-09-03 (`0.1.24+ee364d0`): Die **Token-Stufe ist aus der Spezifikation
+entfernt**, samt Security-Schema `kurs-token`. Es bleiben zwei Stufen: offen und OIDC. Diese
+ADR wird dadurch **bestätigt, nicht abgelöst** — eine vorgebaute Stufen-Abstraktion hätte
+jetzt eine Stufe abstrahiert, die es nie gab und nicht mehr geben soll.
 
 Zusätzlich hält die Spezifikation fest, dass die Anmeldung im Kursbetrieb ohnehin keine
 Person nachweist: alle Konten haben ein gemeinsames, dauerhaftes Kennwort.
