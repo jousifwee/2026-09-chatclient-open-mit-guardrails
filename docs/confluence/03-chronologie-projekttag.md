@@ -8,7 +8,7 @@ sich **Guardrails** und **agentenlesbare Dokumentation** so aufsetzen lassen, da
 beim Codieren keine Freiräume mit Annahmen füllt.
 
 Diese Seite ist die Antwort darauf — mit dem, was der Ansatz tatsächlich verhindert hat.
-Am Ende des zweiten Halbtags: **18 ADRs, 40 Markdown-Dateien, kein einzige Zeile
+Am Ende des zweiten Halbtags: **18 ADRs, 40 Markdown-Dateien, keine einzige Zeile
 Anwendungscode.** Das ist kein Rückstand, das war die Übung.
 
 ---
