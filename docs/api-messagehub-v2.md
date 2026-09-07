@@ -134,6 +134,15 @@ Pfad ist `GET /open/names` dagegen absichtlich öffentlich.)
 Fehlt der `key`, ist das Konto trotzdem erreichbar — **man kann ihm schreiben, nur nicht für
 ihn verschlüsseln.**
 
+> **⚠️ Hinterlegte Schlüssel verfallen.** Die Spezifikation liefert `key` nur, „falls
+> vorhanden **und nicht verfallen**", nennt aber keine Dauer — und `V2DirectoryEntryDto` hat
+> **kein** `expiresAt`. Beobachtet am 2026-09-07: ein am 2026-09-03 gesetzter Schlüssel war
+> weg, das Konto bestand weiter, ein erneutes `PUT` brachte ihn sofort zurück.
+>
+> Ein Client muss seinen eigenen Eintrag deshalb **abgleichen und bei Bedarf erneuern** —
+> sonst wird sein Konto lautlos unverschlüsselbar. Vorgehen in
+> [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md).
+
 ## ⚠️ Das Spielfeld: `/v2/open-directory`
 
 Zwei Endpunkte **ohne Nachweis**, deren erklärter Zweck es ist, kaputt zu sein:
@@ -180,7 +189,9 @@ Für v2 nennt die Spezifikation:
 | Gesamtzahl Konten | gedeckelt (`503`), **Wert nicht genannt** |
 | Nachrichten je Konto | **nicht genannt** |
 | Verfall der Nachrichten | `expiresAt` je Nachricht, Dauer **nicht genannt** |
-| Verfall der Konten | bei Nichtbenutzung; `GET /v2/me` setzt den Zeitpunkt zurück |
+| Verfall der Konten | bei Nichtbenutzung; `GET /v2/me` setzt den Zeitpunkt zurück. Beobachtet: ein Konto überlebt **mindestens 4 Tage** ohne Benutzung |
+| Verfall hinterlegter Schlüssel | vorhanden, Dauer **nicht genannt**, und **kein `expiresAt` im DTO**. Beobachtet: nach 4 Tagen weg |
+| Verfall der Spielfeld-Einträge | `expiresAt` im DTO; beobachtet **etwa 48 Stunden** |
 
 `GET /health` enthält **keinen** v2-Block — die Belegungszahlen des offenen Pfades gibt es
 dort, die der v2-Stufe nicht.

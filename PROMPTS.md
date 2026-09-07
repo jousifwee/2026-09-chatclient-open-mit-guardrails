@@ -6,7 +6,7 @@ Chronologische Liste aller Prompts (Nutzereingaben) in diesem Projekt, inkl.
 Zeitstempel und dem fuer die jeweilige Antwort genutzten Modell. Zeiten in lokaler
 Zeitzone, UTC zusaetzlich angegeben.
 
-Generiert von `tools/collect_prompts.py` am 2026-09-03 16:37 (UTC+02:00) - 19 Prompt(s)
+Generiert von `tools/collect_prompts.py` am 2026-09-07 14:20 (UTC+02:00) - 20 Prompt(s)
 
 ---
 
@@ -205,3 +205,13 @@ Generiert von `tools/collect_prompts.py` am 2026-09-03 16:37 (UTC+02:00) - 19 Pr
 **Prompt:**
 
 > Schau mal bitte auf der Deployment der Änderung schon stattgefunden hat auf dem UEZ Service.
+
+## 20. 2026-09-07 14:16:19 (UTC+02:00)
+
+- **UTC:** 2026-09-07 12:16:19Z
+- **Modell:** Opus 5 (`claude-opus-5`)
+- **Session:** `e50f3f55-1d55-4b09-9e21-3f820209a922`
+
+**Prompt:**
+
+> put ist jetzt freigegeben, prüf nochmal

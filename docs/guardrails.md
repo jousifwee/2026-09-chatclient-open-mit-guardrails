@@ -57,6 +57,8 @@ Fallen, die einen fertig aussehenden Aufruf scheitern lassen. Vollständige Begr
 | Fingerabdruck über das JWK berechnen | JSON ist nicht kanonisch, Clients kämen zu verschiedenen Werten | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Mit einem **ausgemusterten** Schlüssel verschlüsseln | er ist nur noch zum Entschlüsseln da | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Einen Schlüsselwechsel des Gegenübers still übernehmen | ein Wechsel ist von einem Angriff nicht zu unterscheiden | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Annehmen, ein hinterlegter Schlüssel bleibe liegen | er verfällt; ohne Abgleich wird das Konto lautlos unverschlüsselbar | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
+| Eine Verfallsdauer hartkodieren | keine der v2-Dauern steht in der Spezifikation | [api-messagehub-v2.md](api-messagehub-v2.md) |
 | Stillschweigend auf Klartext zurückfallen, wenn ein Schlüssel fehlt | Vertraulichkeit lautlos weg | [ADR-0018](adr/0018-app2-asymmetrisch-ecdh.md) |
 | Nachweise in `libs/domain` einführen | Schichtbruch, Nachweis ist Transportsache | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |
 | Zugangsdaten vorbelegen oder speichern | Geheimnis an Ruhe | [ADR-0015](adr/0015-zwei-apps-getrennte-transporte.md) |

@@ -86,6 +86,10 @@ Der Workspace enthält **zwei** Anwendungen mit **getrennten Transporten**
   `PUT /v2/me/key` ist möglich — dabei gilt: **ausgemusterte Schlüssel bleiben in IndexedDB**
   und werden nur zum Entschlüsseln benutzt, und der Fingerabdruck muss **erneut mündlich**
   verglichen werden (ADR-0018).
+- **⚠️ Hinterlegte Schlüssel verfallen** (beobachtet 2026-09-07, Dauer nicht dokumentiert, kein
+  `expiresAt` im DTO). Anwendung 2 **gleicht ihren eigenen Verzeichniseintrag ab** und setzt
+  ihn bei Bedarf neu — ohne das wird das Konto lautlos unverschlüsselbar. Erneuern ist **kein**
+  Wechsel: derselbe Schlüssel, derselbe Fingerabdruck (ADR-0018).
 - Geteilt werden `libs/domain`, `libs/payload`, `libs/store`, `libs/ui`. **`libs/domain` darf
   nichts über Nachweise wissen.**
 

@@ -78,7 +78,13 @@ auf die fehlende ADR.
    benutzt — mit einem ausgemusterten Schlüssel wird nie verschlüsselt. Der Fingerabdruck
    ändert sich, jede frühere mündliche Bestätigung ist ungültig, und ein Wechsel ist von
    einem Angriff nicht zu unterscheiden: nie still übernehmen (ADR-0018).
-16. **Stack:** Angular `^21.2` mit `@angular/build`, TypeScript `~5.9.3`, npm (ADR-0016).
+16. **Hinterlegte Schlüssel verfallen.** Beim Start und bei jedem Verzeichnisabruf den
+   **eigenen** Eintrag in `GET /v2/directory` prüfen: fehlt `key` oder weicht er ab, per
+   `PUT /v2/me/key` neu setzen. **Keinen Zeitgeber** dafür bauen und **keine Verfallsdauer
+   hartkodieren** — die Spezifikation nennt keine, und `V2DirectoryEntryDto` hat kein
+   `expiresAt`. Erneuern ist kein Wechsel: derselbe Schlüssel behält seinen Fingerabdruck
+   (ADR-0018).
+17. **Stack:** Angular `^21.2` mit `@angular/build`, TypeScript `~5.9.3`, npm (ADR-0016).
    Tests mit Vitest und Playwright; jede Guardrail-Regel bekommt einen Test (ADR-0017).
 
 ## Grenzen des Hubs, die im Code auftauchen müssen

@@ -1,7 +1,8 @@
 # ADR-0018: Anwendung 2 verschlüsselt asymmetrisch — ECDH P-256, HKDF, AES-GCM
 
 **Status:** angenommen (2026-09-03) · Nachtrag 2026-09-03: der `PUT`-Block ist serverseitig
-aufgehoben, Schlüsselwechsel ist möglich
+aufgehoben, Schlüsselwechsel ist möglich · Nachtrag 2026-09-07: **hinterlegte Schlüssel
+verfallen**, Erneuerung ist Pflicht
 
 ## Kontext
 
@@ -140,6 +141,52 @@ Ein Schlüsselwechsel ist bei statischem ECDH nicht folgenlos:
 > Ein Browser, der den alten Preflight zwischengespeichert hat, scheitert bis zu 24 Stunden
 > weiter. In einem frischen Profil prüfen, nicht im offenen Fenster.
 
+## ⚠️ Nachtrag 2026-09-07: der hinterlegte Schlüssel verfällt
+
+**Beobachtet, nicht aus der Spezifikation gelesen.** Ein am 2026-09-03 per `PUT /v2/me/key`
+hinterlegter Schlüssel war am 2026-09-07 aus `GET /v2/directory` **verschwunden** — der
+Verzeichniseintrag des Kontos bestand weiter, nur ohne `key`. Ein erneutes `PUT` brachte ihn
+sofort zurück.
+
+Die Spezifikation deutet es an, ohne eine Dauer zu nennen: `V2DirectoryEntryDto.key` ist „der
+hinterlegte oeffentliche Schluessel, falls vorhanden **und nicht verfallen**". Zum Vergleich:
+Einträge des Spielfelds tragen ein `expiresAt` von etwa 48 Stunden.
+
+**Das Bittere daran:** `V2DirectoryEntryDto` hat **kein** `expiresAt`. Der Client kann also
+nicht auslesen, wann sein eigener Schlüssel verfällt — nur, ob er noch da ist.
+
+### Folgen — und was damit festgelegt ist
+
+1. **Ohne Erneuerung wird ein Konto lautlos unverschlüsselbar.** Nach dem Verfall sehen
+   Absender im Verzeichnis kein `key` mehr und können für dieses Konto nicht verschlüsseln.
+   Niemand bekommt eine Meldung; der Absender müsste auf Klartext ausweichen, und der
+   Empfänger merkt es gar nicht.
+2. **Der Schlüssel wird durch Abgleich erneuert, nicht durch einen Zeitgeber.** Beim Start
+   und bei jedem Abruf des Verzeichnisses vergleicht Anwendung 2 ihren **eigenen** Eintrag mit
+   dem lokal vorhandenen öffentlichen Schlüssel:
+   - Eintrag fehlt oder hat kein `key` → **`PUT /v2/me/key`**
+   - `key` weicht vom eigenen ab → **`PUT`** (jemand anders kann es nicht gewesen sein, der
+     Eintrag ist beglaubigt — also war es Verfall plus Fremdvergabe, oder ein zweites Gerät)
+   - `key` stimmt → nichts tun
+
+   Ein Abgleich braucht keine Annahme über die Verfallsdauer. Ein Zeitgeber bräuchte eine —
+   und die Spezifikation nennt sie nicht.
+3. **`PUT` ist damit nicht Komfort, sondern Betriebsvoraussetzung.** Der Block bis `0.1.29`
+   hätte nicht nur den Wechsel verhindert: der bei der Registrierung mitgegebene Schlüssel
+   wäre nach ein bis zwei Tagen verfallen, und Anwendung 2 wäre **dauerhaft** nicht mehr
+   verschlüsselbar gewesen — ohne dass ein Fehler sichtbar wird.
+4. **Die Erneuerung erzeugt keinen neuen Fingerabdruck.** Erneuern heißt: *denselben*
+   öffentlichen Schlüssel wieder hinterlegen. Das ist ausdrücklich **kein** Wechsel, und die
+   mündliche Bestätigung bleibt gültig. Nur ein neu **erzeugtes** Paar setzt den Zustand auf
+   „Schlüssel geändert" zurück.
+5. **Das UI zeigt den Verzeichniszustand des eigenen Kontos** — „Schlüssel veröffentlicht"
+   gegen „nicht im Verzeichnis". Ein Zustand, der lautlos umkippt, gehört sichtbar gemacht;
+   dieselbe Begründung wie bei der Belegungsanzeige in
+   [ADR-0006](0006-entnehmen-ist-nutzeraktion.md).
+
+**Offen:** die tatsächliche Verfallsdauer. Nicht geraten, nicht hartkodiert
+([ADR-0001](0001-doku-zuerst.md)) — der Abgleich aus Punkt 2 braucht sie nicht.
+
 ## Begründung
 
 - **Der Vertrauensanker ist neu und macht den Unterschied.** ADR-0007 hatte Asymmetrie
@@ -183,6 +230,9 @@ Ein Schlüsselwechsel ist bei statischem ECDH nicht folgenlos:
   Schlüssel bleiben zum Entschlüsseln liegen, der Fingerabdruck muss erneut mündlich
   verglichen werden, und ein Wechsel des Gegenübers wird gemeldet statt still übernommen —
   siehe Nachtrag oben.
+- **Ebenso die Erneuerung:** der eigene Verzeichniseintrag wird abgeglichen und bei Bedarf neu
+  gesetzt, weil hinterlegte Schlüssel verfallen (Nachtrag 2026-09-07). Erneuern ist kein
+  Wechsel — derselbe Schlüssel, derselbe Fingerabdruck.
 
 ## Verworfene Alternativen
 
